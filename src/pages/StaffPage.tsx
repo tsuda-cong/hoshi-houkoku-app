@@ -165,7 +165,7 @@ function RetentionSection() {
   const [done, setDone] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  // 初期値用の currentServiceYear() は9〜12月に1年ずれるため、削除の判定には使わない
+  // 削除の判定は1年ずれると実害が出るので、9月始まりの境界どおりに求める actualServiceYear() を使う
   const currentYear = actualServiceYear()
 
   async function reload() {

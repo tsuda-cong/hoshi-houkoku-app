@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { PIONEER_TARGET_STATUSES, ROSTER_STATUS_ORDER, type Group, type Publisher } from '../types/domain'
-import { currentServiceYear } from '../lib/serviceYear'
+import { serviceYearOptions } from '../lib/serviceYear'
+import { computeReportPeriod } from '../lib/reportPeriod'
 import { usePersistedState, useSessionPersistedState } from '../lib/usePersistedState'
 import { SUMMARY_PATTERNS, type SummaryPattern } from '../lib/printData'
 import { fetchLatestReportedYear } from '../lib/latestPeriod'
 
-const YEAR_OPTIONS = Array.from({ length: 6 }, (_, i) => currentServiceYear() - 2 + i)
+const YEAR_OPTIONS = serviceYearOptions()
 
 const PATTERN_LABELS: Record<SummaryPattern, string> = {
   会衆: '会衆の合計',
@@ -20,11 +21,13 @@ export function ReportsHubPage() {
   const [publishers, setPublishers] = useState<Publisher[]>([])
   const [groups, setGroups] = useState<Group[]>([])
   const [publisherId, setPublisherId] = usePersistedState('reportsHub.publisherId', '')
-  const [year, setYear] = useSessionPersistedState('reportsHub.year', currentServiceYear())
+  // 年度の初期値は報告フォームと同じ規則で決める(9月をまたいでも1年ずれない)
+  const initialYear = computeReportPeriod().year
+  const [year, setYear] = useSessionPersistedState('reportsHub.year', initialYear)
   // 一括出力の対象。'pioneers' か、グループのid
   const [bulkScope, setBulkScope] = usePersistedState('reportsHub.bulkScope', 'pioneers')
-  const [bulkYear, setBulkYear] = useSessionPersistedState('reportsHub.bulkYear', currentServiceYear())
-  const [summaryYear, setSummaryYear] = useSessionPersistedState('congregationSummary.year', currentServiceYear())
+  const [bulkYear, setBulkYear] = useSessionPersistedState('reportsHub.bulkYear', initialYear)
+  const [summaryYear, setSummaryYear] = useSessionPersistedState('congregationSummary.year', initialYear)
   const [summaryPattern, setSummaryPattern] = usePersistedState<SummaryPattern>('congregationSummary.pattern', '会衆')
 
   useEffect(() => {

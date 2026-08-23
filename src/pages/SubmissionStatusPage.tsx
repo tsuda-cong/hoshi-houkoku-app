@@ -2,23 +2,32 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { ROSTER_STATUS_ORDER, type Group, type Publisher, type ServiceReport } from '../types/domain'
-import { currentMonth, currentServiceYear } from '../lib/serviceYear'
+import { serviceYearOptions } from '../lib/serviceYear'
+import { computeReportPeriod } from '../lib/reportPeriod'
 import { useSessionPersistedState } from '../lib/usePersistedState'
+import { useLatestReportedPeriodDefault } from '../lib/useLatestPeriodDefault'
 
-const YEAR_OPTIONS = Array.from({ length: 6 }, (_, i) => currentServiceYear() - 2 + i)
+const YEAR_OPTIONS = serviceYearOptions()
 const MONTH_OPTIONS = [9, 10, 11, 12, 1, 2, 3, 4, 5, 6, 7, 8]
 
 export function SubmissionStatusPage() {
   const [publishers, setPublishers] = useState<Publisher[]>([])
   const [groups, setGroups] = useState<Group[]>([])
   const [reports, setReports] = useState<ServiceReport[]>([])
-  // 報告一覧ページと同じキーを使い、年度・月の選択を共有する(報告入力→提出状況確認という運用の流れに合わせるため)
-  const [year, setYear] = useSessionPersistedState('reportList.year', currentServiceYear())
-  const [month, setMonth] = useSessionPersistedState('reportList.month', currentMonth())
+  // 報告一覧ページと同じキーを使い、年度・月の選択を共有する(報告入力→提出状況確認という運用の流れに合わせるため)。
+  // 初期値は報告フォームと同じ規則で「いま提出を受け付けている月」を出す(9月をまたいでも1年ずれない)
+  const initialPeriod = computeReportPeriod()
+  const [year, setYear] = useSessionPersistedState('reportList.year', initialPeriod.year)
+  const [month, setMonth] = useSessionPersistedState('reportList.month', initialPeriod.month)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  useLatestReportedPeriodDefault('reportList.year', setYear, setMonth)
+
   useEffect(() => {
+    // 起動直後にuseLatestReportedPeriodDefaultでyear/monthが変わると、古いyear/monthでの取得が
+    // 後から解決して新しい結果を上書きすることがあるため、最新でなくなった実行の結果は反映しない
+    let cancelled = false
     setLoading(true)
     Promise.all([
       supabase.from('publishers').select('*').eq('is_active', true).order('last_name_kana').returns<Publisher[]>(),
@@ -26,6 +35,7 @@ export function SubmissionStatusPage() {
       supabase.from('service_reports').select('*').eq('year', year).eq('month', month).returns<ServiceReport[]>(),
     ])
       .then(([pubRes, groupRes, reportRes]) => {
+        if (cancelled) return
         if (pubRes.error) throw pubRes.error
         if (groupRes.error) throw groupRes.error
         if (reportRes.error) throw reportRes.error
@@ -33,8 +43,15 @@ export function SubmissionStatusPage() {
         setGroups(groupRes.data ?? [])
         setReports(reportRes.data ?? [])
       })
-      .catch((e) => setError(e instanceof Error ? e.message : '読み込みに失敗しました'))
-      .finally(() => setLoading(false))
+      .catch((e) => {
+        if (!cancelled) setError(e instanceof Error ? e.message : '読み込みに失敗しました')
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
   }, [year, month])
 
   // 転入前の記録などnoCountが立った報告は、提出済み扱いにしない

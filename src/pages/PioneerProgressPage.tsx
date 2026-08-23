@@ -2,18 +2,19 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import type { Publisher, ServiceReport } from '../types/domain'
-import { currentServiceYear, SERVICE_YEAR_MONTHS } from '../lib/serviceYear'
+import { SERVICE_YEAR_MONTHS, serviceYearOptions } from '../lib/serviceYear'
+import { computeReportPeriod } from '../lib/reportPeriod'
 import { useSessionPersistedState } from '../lib/usePersistedState'
 import { fetchLatestReportedYear } from '../lib/latestPeriod'
 import { shortfallColor } from '../lib/shortfallColor'
 
-const YEAR_OPTIONS = Array.from({ length: 6 }, (_, i) => currentServiceYear() - 2 + i)
+const YEAR_OPTIONS = serviceYearOptions()
 const PIONEER_TYPES = ['補助開拓者', '正規開拓者', '特別開拓者', '野外の宣教者']
 
 export function PioneerProgressPage() {
   const [publishers, setPublishers] = useState<Publisher[]>([])
   const [reports, setReports] = useState<ServiceReport[]>([])
-  const [year, setYear] = useSessionPersistedState('pioneerProgress.year', currentServiceYear())
+  const [year, setYear] = useSessionPersistedState('pioneerProgress.year', computeReportPeriod().year)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 

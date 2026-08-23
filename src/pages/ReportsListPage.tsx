@@ -2,15 +2,16 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { PIONEER_STATUSES, type Publisher, type ServiceReport } from '../types/domain'
-import { currentMonth, currentServiceYear, nextServicePeriod } from '../lib/serviceYear'
+import { nextServicePeriod, serviceYearOptions } from '../lib/serviceYear'
+import { computeReportPeriod } from '../lib/reportPeriod'
+import { useLatestReportedPeriodDefault } from '../lib/useLatestPeriodDefault'
 import { closePeriod, fetchClosedPeriod, reopenPeriod, type ClosedPeriod } from '../lib/closedPeriods'
 import { useSessionPersistedState } from '../lib/usePersistedState'
 import { mapPioneerStatus } from '../lib/importParsing'
-import { fetchLatestReportedPeriod } from '../lib/latestPeriod'
 import { useAuth } from '../context/AuthContext'
 import { RowActionsMenu } from '../components/RowActionsMenu'
 
-const YEAR_OPTIONS = Array.from({ length: 6 }, (_, i) => currentServiceYear() - 2 + i)
+const YEAR_OPTIONS = serviceYearOptions()
 const MONTH_OPTIONS = [9, 10, 11, 12, 1, 2, 3, 4, 5, 6, 7, 8]
 const NEW_ROW_ID = '__new__'
 
@@ -180,8 +181,10 @@ export function ReportsListPage() {
   const { isAdmin } = useAuth()
   const [publishers, setPublishers] = useState<Publisher[]>([])
   const [reports, setReports] = useState<ServiceReport[]>([])
-  const [year, setYear] = useSessionPersistedState('reportList.year', currentServiceYear())
-  const [month, setMonth] = useSessionPersistedState('reportList.month', currentMonth())
+  // 初期値は報告フォームと同じ規則で「いま提出を受け付けている月」を出す(9月をまたいでも1年ずれない)
+  const initialPeriod = computeReportPeriod()
+  const [year, setYear] = useSessionPersistedState('reportList.year', initialPeriod.year)
+  const [month, setMonth] = useSessionPersistedState('reportList.month', initialPeriod.month)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -193,18 +196,7 @@ export function ReportsListPage() {
   const [closing, setClosing] = useState(false)
   const [importResult, setImportResult] = useState<{ added: number; warnings: string[] } | null>(null)
 
-  useEffect(() => {
-    // このタブ(セッション)でまだ年度・月を選んでいない場合だけ、今日の日付ではなく登録済みの最新の月を初期値にする
-    if (sessionStorage.getItem('reportList.year') !== null) return
-    fetchLatestReportedPeriod()
-      .then((latest) => {
-        if (!latest) return
-        setYear(latest.year)
-        setMonth(latest.month)
-      })
-      .catch(() => {})
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  useLatestReportedPeriodDefault('reportList.year', setYear, setMonth)
 
   const fetchData = useCallback(async () => {
     const [{ data: pubData, error: pubError }, { data: reportData, error: reportError }] = await Promise.all([
