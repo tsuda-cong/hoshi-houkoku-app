@@ -19,13 +19,37 @@ export function serviceYearOptions(date = new Date()): number[] {
   return Array.from({ length: 6 }, (_, i) => base - 3 + i)
 }
 
+function monthIndex(month: number): number {
+  return SERVICE_YEAR_MONTHS.indexOf(month as (typeof SERVICE_YEAR_MONTHS)[number])
+}
+
 // 奉仕年度の並び(9月始まり)での「翌月」。8月の次は翌奉仕年度の9月になる。
-// 確定後に遅れて提出された報告を翌月の会衆集計に加算するときに使う
+// 確定後に遅れて提出された報告を翌月の会衆集計に加算するときと、報告一覧の月送りで使う
 export function nextServicePeriod(year: number, month: number): { year: number; month: number } {
-  const index = SERVICE_YEAR_MONTHS.indexOf(month as (typeof SERVICE_YEAR_MONTHS)[number])
+  const index = monthIndex(month)
   if (index < 0) return { year, month }
   if (index === SERVICE_YEAR_MONTHS.length - 1) return { year: year + 1, month: SERVICE_YEAR_MONTHS[0] }
   return { year, month: SERVICE_YEAR_MONTHS[index + 1] }
+}
+
+// 奉仕年度の並びでの「前月」。9月の前は前奉仕年度の8月になる。
+// 暦の月をそのまま1引くと、9月→8月が同じ年度のまま最後の月に飛ぶという形で年度がずれる
+export function previousServicePeriod(year: number, month: number): { year: number; month: number } {
+  const index = monthIndex(month)
+  if (index < 0) return { year, month }
+  if (index === 0) return { year: year - 1, month: SERVICE_YEAR_MONTHS[SERVICE_YEAR_MONTHS.length - 1] }
+  return { year, month: SERVICE_YEAR_MONTHS[index - 1] }
+}
+
+// 2つの「年度と月」を奉仕年度の並びで比べる。負ならaが古い、0なら同じ、正ならaが新しい。
+// 暦の月の大小で比べると並びが崩れる(同じ年度なら9月が一番古く1月はその後、8月が一番新しい)ため、
+// 前後の判定や範囲の内外の判定は必ずこれを通すこと。
+export function compareServicePeriods(
+  a: { year: number; month: number },
+  b: { year: number; month: number },
+): number {
+  if (a.year !== b.year) return a.year - b.year
+  return monthIndex(a.month) - monthIndex(b.month)
 }
 
 export function serviceYearLabel(year: number): string {

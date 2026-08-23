@@ -2,9 +2,15 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { PIONEER_STATUSES, type Publisher, type ServiceReport } from '../types/domain'
-import { nextServicePeriod, serviceYearOptions } from '../lib/serviceYear'
+import {
+  compareServicePeriods,
+  nextServicePeriod,
+  previousServicePeriod,
+  serviceYearOptions,
+} from '../lib/serviceYear'
 import { computeReportPeriod } from '../lib/reportPeriod'
 import { useLatestReportedPeriodDefault } from '../lib/useLatestPeriodDefault'
+import { fetchLatestReportedPeriod, fetchOldestReportedPeriod, type ServicePeriod } from '../lib/latestPeriod'
 import { closePeriod, fetchClosedPeriod, reopenPeriod, type ClosedPeriod } from '../lib/closedPeriods'
 import { useSessionPersistedState } from '../lib/usePersistedState'
 import { mapPioneerStatus } from '../lib/importParsing'
@@ -195,8 +201,22 @@ export function ReportsListPage() {
   const [closedPeriod, setClosedPeriod] = useState<ClosedPeriod | null>(null)
   const [closing, setClosing] = useState(false)
   const [importResult, setImportResult] = useState<{ added: number; warnings: string[] } | null>(null)
+  // 月送りボタンで動ける範囲。報告が1件も無ければ null
+  const [oldestPeriod, setOldestPeriod] = useState<ServicePeriod | null>(null)
+  const [latestPeriod, setLatestPeriod] = useState<ServicePeriod | null>(null)
 
   useLatestReportedPeriodDefault('reportList.year', setYear, setMonth)
+
+  // 端の月は年度・月を変えても変わらないので、開いたときと報告を変更したあとにだけ取り直す
+  const refreshRange = useCallback(async () => {
+    const [oldest, latest] = await Promise.all([fetchOldestReportedPeriod(), fetchLatestReportedPeriod()])
+    setOldestPeriod(oldest)
+    setLatestPeriod(latest)
+  }, [])
+
+  useEffect(() => {
+    refreshRange().catch(() => {})
+  }, [refreshRange])
 
   const fetchData = useCallback(async () => {
     const [{ data: pubData, error: pubError }, { data: reportData, error: reportError }] = await Promise.all([
@@ -218,11 +238,14 @@ export function ReportsListPage() {
     return { publishers: pubData ?? [], reports: reportData ?? [] }
   }, [year, month])
 
-  // 保存/削除/一括取込のあとに使う、その場で結果を反映する再取得
+  // 保存/削除/一括取込のあとに使う、その場で結果を反映する再取得。
+  // 新しい月の1件目を入れた直後などに端の月が変わるため、動ける範囲も取り直す
+  // (ここが失敗しても保存自体は成功しているので、保存のエラーとしては扱わない)
   async function refetch() {
     const data = await fetchData()
     setPublishers(data.publishers)
     setReports(data.reports)
+    refreshRange().catch(() => {})
   }
 
   useEffect(() => {
@@ -308,6 +331,29 @@ export function ReportsListPage() {
     const reportedIds = new Set(reports.map((r) => r.publisher_id))
     return publishers.filter((p) => p.is_active && !reportedIds.has(p.id))
   }, [publishers, reports])
+
+  // ---- 月送りナビ ----
+  // 「次月 →」で進める上限は、報告のある最新の月と「いま提出を受け付けている月」の新しい方。
+  // まだ1件も出ていない受付中の月にも進めるようにしておくと、遅れて出された分や転入者の記録を
+  // 先に手入力したいときに、年度・月を選び直さずに開ける。
+  const navEnd = useMemo(() => {
+    const collecting = computeReportPeriod()
+    if (!latestPeriod) return collecting
+    return compareServicePeriods(latestPeriod, collecting) >= 0 ? latestPeriod : collecting
+  }, [latestPeriod])
+
+  const selectedPeriod = { year, month }
+  // 無効にするのは「移動先が範囲の外に出るとき」だけ。こうしておくと、ドロップダウンで範囲外の年度を
+  // 選んだ状態でも、範囲へ戻る向きのボタンはそのまま押せる
+  const canGoPrev = !!oldestPeriod && compareServicePeriods(previousServicePeriod(year, month), oldestPeriod) >= 0
+  const canGoNext = compareServicePeriods(nextServicePeriod(year, month), navEnd) <= 0
+  const canGoOldest = !!oldestPeriod && compareServicePeriods(selectedPeriod, oldestPeriod) !== 0
+  const canGoLatest = !!latestPeriod && compareServicePeriods(selectedPeriod, latestPeriod) !== 0
+
+  function goToPeriod(period: ServicePeriod) {
+    setYear(period.year)
+    setMonth(period.month)
+  }
 
   function toggleAddRow() {
     if (editingId === NEW_ROW_ID) {
@@ -512,6 +558,12 @@ export function ReportsListPage() {
         )}
       </div>
       <div className="date-nav">
+        <button type="button" onClick={() => oldestPeriod && goToPeriod(oldestPeriod)} disabled={!canGoOldest}>
+          《 最古
+        </button>
+        <button type="button" onClick={() => goToPeriod(previousServicePeriod(year, month))} disabled={!canGoPrev}>
+          ← 前月
+        </button>
         <label>
           年度
           <select value={year} onChange={(e) => setYear(Number(e.target.value))}>
@@ -532,6 +584,12 @@ export function ReportsListPage() {
             ))}
           </select>
         </label>
+        <button type="button" onClick={() => goToPeriod(nextServicePeriod(year, month))} disabled={!canGoNext}>
+          次月 →
+        </button>
+        <button type="button" onClick={() => latestPeriod && goToPeriod(latestPeriod)} disabled={!canGoLatest}>
+          最新 》
+        </button>
       </div>
       <table className="crud-table month-summary-table">
         <thead>
