@@ -3,17 +3,10 @@ import { PIONEER_STATUSES, type Publisher, type ServiceReport } from '../types/d
 import { SERVICE_YEAR_MONTHS } from './serviceYear'
 import { shortfallColor } from './shortfallColor'
 import { renderTablesPdf, type TableCell } from './pdfTable'
+import { buildMonthSummary } from './monthSummary'
 
 // 画面の一覧をそのままA4のPDFにする。
 // 報告一覧は縦置きで1か月分(上部の立場別集計も含む)、開拓者進捗は横置きで1年度分。
-
-const SUMMARY_STATUS_ROWS: Array<{ status: (typeof PIONEER_STATUSES)[number]; label: string }> = [
-  { status: '伝道者', label: '伝' },
-  { status: '補助開拓者', label: '補' },
-  { status: '正規開拓者', label: '開' },
-  { status: '特別開拓者', label: '特開' },
-  { status: '野外の宣教者', label: '野宣' },
-]
 
 const STATUS_SHORT: Record<string, string> = {
   伝道者: '伝',
@@ -61,24 +54,8 @@ export async function buildReportListPdf(year: number, month: number): Promise<U
     return (byId.get(a.publisher_id)?.romaji ?? '').localeCompare(byId.get(b.publisher_id)?.romaji ?? '')
   })
 
-  // 集計はNC(集計対象外)を除く。画面の小表と同じ計算
-  const counted = reports.filter((r) => !r.no_count)
-  const summaryRows = SUMMARY_STATUS_ROWS.map(({ status, label }) => {
-    const m = counted.filter((r) => r.pioneer_status_snapshot === status)
-    return {
-      label,
-      // 「報告の数」は行数ではなく人数で数える。前月から回ってきた分により
-      // 同じ人の行が2つ入りうるため(会衆集計と同じ数え方)
-      count: new Set(m.map((r) => r.publisher_id)).size,
-      studies: m.reduce((s, r) => s + r.bible_studies, 0),
-      hours: m.reduce((s, r) => s + r.hours, 0),
-    }
-  })
-  const total = {
-    count: new Set(counted.map((r) => r.publisher_id)).size,
-    studies: summaryRows.reduce((s, r) => s + r.studies, 0),
-    hours: summaryRows.reduce((s, r) => s + r.hours, 0),
-  }
+  // 画面の小表とまったく同じものを使う(該当者がいない立場を出さない判定を含む)
+  const { rows: summaryRows, total } = buildMonthSummary(reports, publishers)
 
   const summaryTable: TableCell[][] = [
     ...summaryRows.map((r) => [

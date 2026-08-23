@@ -11,6 +11,7 @@ import {
 import { computeReportPeriod } from '../lib/reportPeriod'
 import { useLatestReportedPeriodDefault } from '../lib/useLatestPeriodDefault'
 import { fetchLatestReportedPeriod, fetchOldestReportedPeriod, type ServicePeriod } from '../lib/latestPeriod'
+import { buildMonthSummary } from '../lib/monthSummary'
 import { closePeriod, fetchClosedPeriod, reopenPeriod, type ClosedPeriod } from '../lib/closedPeriods'
 import { useSessionPersistedState } from '../lib/usePersistedState'
 import { mapPioneerStatus } from '../lib/importParsing'
@@ -20,14 +21,6 @@ import { RowActionsMenu } from '../components/RowActionsMenu'
 const YEAR_OPTIONS = serviceYearOptions()
 const MONTH_OPTIONS = [9, 10, 11, 12, 1, 2, 3, 4, 5, 6, 7, 8]
 const NEW_ROW_ID = '__new__'
-
-const SUMMARY_STATUS_ROWS: Array<{ status: (typeof PIONEER_STATUSES)[number]; label: string }> = [
-  { status: '伝道者', label: '伝' },
-  { status: '補助開拓者', label: '補' },
-  { status: '正規開拓者', label: '開' },
-  { status: '特別開拓者', label: '特開' },
-  { status: '野外の宣教者', label: '野宣' },
-]
 
 function normalizeName(s: string) {
   return s.replace(/\s+/g, '')
@@ -306,26 +299,7 @@ export function ReportsListPage() {
   }, [reports, publisherMap])
 
   // 対象月の立場別集計(人数・研究・時間)。NCが立った報告は会衆集計と同様に除外する
-  const monthSummary = useMemo(() => {
-    const counted = reports.filter((r) => !r.no_count)
-    const rows = SUMMARY_STATUS_ROWS.map(({ status, label }) => {
-      const matching = counted.filter((r) => r.pioneer_status_snapshot === status)
-      return {
-        label,
-        // 「報告の数」は行数ではなく人数で数える。前月から回ってきた分により
-        // 同じ人の行が2つ入りうるため(会衆集計と同じ数え方)
-        count: new Set(matching.map((r) => r.publisher_id)).size,
-        studies: matching.reduce((sum, r) => sum + r.bible_studies, 0),
-        hours: matching.reduce((sum, r) => sum + r.hours, 0),
-      }
-    })
-    const total = {
-      count: new Set(counted.map((r) => r.publisher_id)).size,
-      studies: rows.reduce((sum, r) => sum + r.studies, 0),
-      hours: rows.reduce((sum, r) => sum + r.hours, 0),
-    }
-    return { rows, total }
-  }, [reports])
+  const monthSummary = useMemo(() => buildMonthSummary(reports, publishers), [reports, publishers])
 
   const unreportedPublishers = useMemo(() => {
     const reportedIds = new Set(reports.map((r) => r.publisher_id))
