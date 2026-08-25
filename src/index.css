@@ -324,7 +324,10 @@ input {
 /* ---- publisher add/edit form ---- */
 
 .publisher-form,
-.publisher-inline-form {
+/* 設定ページの各項目と、帳票印刷ページの各項目で同じ枠を使う。
+   別々に書くと片方だけ直したときに見た目がずれるため、まとめて指定する */
+.publisher-inline-form,
+.page-section {
   margin-bottom: 20px;
   padding: 16px 20px;
   border: 1px solid var(--border);
@@ -335,6 +338,12 @@ input {
 .publisher-form h2,
 .publisher-inline-form h2 {
   font-size: 16px;
+  margin-bottom: 12px;
+}
+
+/* 帳票印刷ページは項目数が少なく1件ずつ選んで開く画面なので、見出しを大きめにして区切りを強く出す */
+.page-section h2 {
+  font-size: 20px;
   margin-bottom: 12px;
 }
 
@@ -793,6 +802,8 @@ input {
   flex-direction: column;
   gap: 8px;
   list-style: none;
+  /* ulの既定の余白を消す。枠(.page-section)の中に入れたとき、下だけ余白が二重になって間延びするため */
+  margin: 0;
   padding: 0;
   max-width: 320px;
 }

@@ -73,114 +73,120 @@ export function ReportsHubPage() {
         <h1>帳票印刷</h1>
       </div>
 
-      <h2 style={{ fontSize: 15, marginBottom: 8 }}>個人の帳票</h2>
-      <p className="reports-hint">個人・年度を選んで印刷したい帳票を開いてください。</p>
-      <div className="date-nav">
-        <label>
-          伝道者
-          <select value={publisherId} onChange={(e) => setPublisherId(e.target.value)}>
-            <option value="">選択してください</option>
-            {publishers.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.last_name} {p.first_name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          年度
-          <select value={year} onChange={(e) => setYear(Number(e.target.value))}>
-            {YEAR_OPTIONS.map((y) => (
-              <option key={y} value={y}>
-                {y}年度
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <ul className="reports-list">
-        {publisherId && (
-          <li>
-            <Link to={`/print/publisher-card/${publisherId}/${year}`}>伝道者記録を印刷</Link>
-          </li>
-        )}
-        {publisherId && needsYearEndNotice && (
-          <li>
-            <Link to={`/print/year-end-notice/${publisherId}/${year}`}>年度末お知らせを印刷</Link>
-          </li>
-        )}
-      </ul>
+      <section className="page-section">
+        <h2>個人の帳票</h2>
+        <p className="reports-hint">個人・年度を選んで印刷したい帳票を開いてください。</p>
+        <div className="date-nav">
+          <label>
+            伝道者
+            <select value={publisherId} onChange={(e) => setPublisherId(e.target.value)}>
+              <option value="">選択してください</option>
+              {publishers.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.last_name} {p.first_name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            年度
+            <select value={year} onChange={(e) => setYear(Number(e.target.value))}>
+              {YEAR_OPTIONS.map((y) => (
+                <option key={y} value={y}>
+                  {y}年度
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <ul className="reports-list">
+          {publisherId && (
+            <li>
+              <Link to={`/print/publisher-card/${publisherId}/${year}`}>伝道者記録を印刷</Link>
+            </li>
+          )}
+          {publisherId && needsYearEndNotice && (
+            <li>
+              <Link to={`/print/year-end-notice/${publisherId}/${year}`}>年度末お知らせを印刷</Link>
+            </li>
+          )}
+        </ul>
+      </section>
 
-      <h2 style={{ fontSize: 15, marginTop: 24, marginBottom: 8 }}>伝道者記録の一括出力</h2>
-      <p className="reports-hint">
-        在籍者の伝道者記録を、1人1ページでまとめた1つのPDFにします（ローマ字順）。
-        開拓者（正規・特別・野外の宣教者）はグループ横断でまとめ、各グループはそれ以外の方が対象です。
-      </p>
-      <div className="date-nav">
-        <label>
-          対象
-          <select value={bulkScope} onChange={(e) => setBulkScope(e.target.value)}>
-            <option value="pioneers">開拓者（正規・特別・野外の宣教者）</option>
-            {groups.map((g) => (
-              <option key={g.id} value={g.id}>
-                {g.name}グループ
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          年度
-          <select value={bulkYear} onChange={(e) => setBulkYear(Number(e.target.value))}>
-            {YEAR_OPTIONS.map((y) => (
-              <option key={y} value={y}>
-                {y}年度
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <ul className="reports-list">
-        <li>
-          <Link to={`/print/publisher-cards/${bulkScope}/${bulkYear}`}>
-            {bulkScope === 'pioneers'
-              ? '開拓者'
-              : `${groups.find((g) => g.id === bulkScope)?.name ?? ''}グループ`}
-            の伝道者記録をまとめて出力
-          </Link>
-        </li>
-      </ul>
+      <section className="page-section">
+        <h2>伝道者記録の一括出力</h2>
+        <p className="reports-hint">
+          在籍者の伝道者記録を、1人1ページでまとめた1つのPDFにします（ローマ字順）。
+          開拓者（正規・特別・野外の宣教者）はグループ横断でまとめ、各グループはそれ以外の方が対象です。
+        </p>
+        <div className="date-nav">
+          <label>
+            対象
+            <select value={bulkScope} onChange={(e) => setBulkScope(e.target.value)}>
+              <option value="pioneers">開拓者（正規・特別・野外の宣教者）</option>
+              {groups.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.name}グループ
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            年度
+            <select value={bulkYear} onChange={(e) => setBulkYear(Number(e.target.value))}>
+              {YEAR_OPTIONS.map((y) => (
+                <option key={y} value={y}>
+                  {y}年度
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <ul className="reports-list">
+          <li>
+            <Link to={`/print/publisher-cards/${bulkScope}/${bulkYear}`}>
+              {bulkScope === 'pioneers'
+                ? '開拓者'
+                : `${groups.find((g) => g.id === bulkScope)?.name ?? ''}グループ`}
+              の伝道者記録をまとめて出力
+            </Link>
+          </li>
+        </ul>
+      </section>
 
-      <h2 style={{ fontSize: 15, marginTop: 24, marginBottom: 8 }}>会衆の帳票</h2>
-      <p className="reports-hint">年度・集計パターンを選んで印刷してください（伝道者記録と同じ書式に集計値を差し込みます）。</p>
-      <div className="date-nav">
-        <label>
-          年度
-          <select value={summaryYear} onChange={(e) => setSummaryYear(Number(e.target.value))}>
-            {YEAR_OPTIONS.map((y) => (
-              <option key={y} value={y}>
-                {y}年度
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          集計パターン
-          <select value={summaryPattern} onChange={(e) => setSummaryPattern(e.target.value as SummaryPattern)}>
-            {SUMMARY_PATTERNS.map((p) => (
-              <option key={p} value={p}>
-                {PATTERN_LABELS[p]}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <ul className="reports-list">
-        <li>
-          <Link to={`/print/congregation-summary/${summaryYear}/${summaryPattern}`}>
-            {PATTERN_LABELS[summaryPattern]}を印刷
-          </Link>
-        </li>
-      </ul>
+      <section className="page-section">
+        <h2>会衆の帳票</h2>
+        <p className="reports-hint">年度・集計パターンを選んで印刷してください（伝道者記録と同じ書式に集計値を差し込みます）。</p>
+        <div className="date-nav">
+          <label>
+            年度
+            <select value={summaryYear} onChange={(e) => setSummaryYear(Number(e.target.value))}>
+              {YEAR_OPTIONS.map((y) => (
+                <option key={y} value={y}>
+                  {y}年度
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            集計パターン
+            <select value={summaryPattern} onChange={(e) => setSummaryPattern(e.target.value as SummaryPattern)}>
+              {SUMMARY_PATTERNS.map((p) => (
+                <option key={p} value={p}>
+                  {PATTERN_LABELS[p]}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <ul className="reports-list">
+          <li>
+            <Link to={`/print/congregation-summary/${summaryYear}/${summaryPattern}`}>
+              {PATTERN_LABELS[summaryPattern]}を印刷
+            </Link>
+          </li>
+        </ul>
+      </section>
     </div>
   )
 }
