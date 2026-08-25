@@ -22,6 +22,9 @@ function outputNote() {
   return `出力日 ${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`
 }
 
+// 前月から回ってきた報告の対象月に使う赤。画面の --danger (index.css) と同じ値
+const CARRIED_OVER_COLOR = '#c0362c'
+
 // ---- 報告一覧(縦置き・1か月分) ----
 
 export async function buildReportListPdf(year: number, month: number): Promise<Uint8Array> {
@@ -74,10 +77,13 @@ export async function buildReportListPdf(year: number, month: number): Promise<U
 
   const rows: TableCell[][] = sorted.map((r) => {
     const p = byId.get(r.publisher_id)
+    // counted_in_monthが入っているのは、前月から「翌月に加算」で回ってきた行だけ
+    // (この月自身の行は取得条件でcounted_in_monthがnullのものに限っている)
+    const carriedOver = r.counted_in_month !== null
     return [
       { text: p ? `${p.last_name} ${p.first_name}` : '' },
-      // 遅れて提出され前月から回ってきた分は、同じ人が2行並ぶことがあるので月を示す
-      { text: r.month === month ? '' : `${r.month}月`, align: 'center' as const },
+      // 全行に対象月を出す。同じ人が2つの月の行で並ぶことがあるため、回ってきた分は赤字で区別する
+      { text: `${r.month}月`, align: 'center' as const, color: carriedOver ? CARRIED_OVER_COLOR : undefined },
       { text: r.preached ? '○' : '×', align: 'center' },
       { text: String(r.bible_studies), align: 'right' },
       { text: r.hours > 0 ? String(r.hours) : '―', align: 'right' },

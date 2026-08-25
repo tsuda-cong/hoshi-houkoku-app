@@ -26,6 +26,8 @@ export interface TableCell {
   text: string
   /** 背景色(#rrggbb)。開拓者進捗の不足の色分けに使う */
   bg?: string
+  /** 文字色(#rrggbb)。報告一覧で、前月から回ってきた行の対象月を赤く出すのに使う */
+  color?: string
   align?: Align
   bold?: boolean
 }
@@ -74,6 +76,7 @@ function drawCellText(
   size: number,
   align: Align,
   bold: boolean,
+  color = BLACK,
 ) {
   if (!text) return
   // 太字フォントは収録文字を絞ってあるため、無い文字が来たら本文用にする
@@ -84,7 +87,7 @@ function drawCellText(
   let tx = x + pad
   if (align === 'center') tx = x + (width - w) / 2
   else if (align === 'right') tx = x + width - pad - w
-  page.drawText(shown, { x: tx, y, size, font, color: BLACK })
+  page.drawText(shown, { x: tx, y, size, font, color })
 }
 
 export interface RenderOptions {
@@ -178,6 +181,7 @@ export async function renderTablesPdf(options: RenderOptions): Promise<Uint8Arra
           fontSize,
           cell.align ?? block.columns[i]?.align ?? 'left',
           isHeader || !!cell.bold,
+          cell.color ? parseColor(cell.color) : BLACK,
         )
       })
       // 横罫線

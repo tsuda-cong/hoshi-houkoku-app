@@ -679,7 +679,9 @@ export function ReportsListPage() {
             ) : (
               <tr key={r.id}>
                 <td>{publisherName(r.publisher_id)}</td>
-                <td>{r.month === month ? '' : `${r.month}月分`}</td>
+                {/* 全行に対象月を出す。前月から「翌月に加算」で回ってきた行(counted_in_monthが入っている行)は
+                    同じ人が2つの月で並ぶことがあるため、赤字で区別する */}
+                <td className={r.counted_in_month !== null ? 'carried-over-month' : undefined}>{r.month}月分</td>
                 <td>{r.preached ? '✓' : ''}</td>
                 <td>{r.bible_studies}</td>
                 <td>{r.hours || ''}</td>

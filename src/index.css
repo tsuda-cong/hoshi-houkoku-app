@@ -434,6 +434,18 @@ input {
   color: var(--danger);
 }
 
+/* 報告一覧の「対象月」。前月から遅れて回ってきた行だけ赤字にして見分けられるようにする */
+.carried-over-month {
+  color: var(--danger);
+}
+
+@media (prefers-color-scheme: dark) {
+  /* --danger(#c0362c)は暗い背景だと沈んで読みにくいので、ダーク表示では明るい赤にする */
+  .carried-over-month {
+    color: #ff8a80;
+  }
+}
+
 /* ---- login ---- */
 
 .login-page {
