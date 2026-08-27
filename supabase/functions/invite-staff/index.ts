@@ -6,13 +6,23 @@
 // deleteUser()を呼べばstaff行は自動的に連動して消える(staff側を別途消す必要はない)。
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-// GitHub Pagesの本番オリジンとローカル開発サーバーのみ許可する
-const ALLOWED_ORIGINS = new Set(['https://yida1990jw-wq.github.io', 'http://localhost:5174', 'http://localhost:5173'])
+// GitHub Pagesの本番オリジンとローカル開発サーバーのみ許可する。
+// 組織(tsuda-cong)へリポジトリを移したのでオリジンが変わる。移行の途中でどちらからでも
+// 使えるよう、旧オリジンもしばらく残す(旧URLが完全に使われなくなったら消してよい)。
+// ここを直し忘れると、新URLからのスタッフ招待・削除がCORSで弾かれる。
+// 画面には「失敗しました」としか出ないため原因が分かりにくい箇所。
+const NEW_ORIGIN = 'https://tsuda-cong.github.io'
+const ALLOWED_ORIGINS = new Set([
+  NEW_ORIGIN,
+  'https://yida1990jw-wq.github.io',
+  'http://localhost:5174',
+  'http://localhost:5173',
+])
 
 function corsHeaders(req: Request) {
   const origin = req.headers.get('Origin') ?? ''
   return {
-    'Access-Control-Allow-Origin': ALLOWED_ORIGINS.has(origin) ? origin : 'https://yida1990jw-wq.github.io',
+    'Access-Control-Allow-Origin': ALLOWED_ORIGINS.has(origin) ? origin : NEW_ORIGIN,
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
   }
