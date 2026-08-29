@@ -4,18 +4,10 @@ import { SERVICE_YEAR_MONTHS } from './serviceYear'
 import { shortfallColor } from './shortfallColor'
 import { renderTablesPdf, type TableCell } from './pdfTable'
 import { buildMonthSummary } from './monthSummary'
+import { shortStatus } from './statusShort'
 
 // 画面の一覧をそのままA4のPDFにする。
 // 報告一覧は縦置きで1か月分(上部の立場別集計も含む)、開拓者進捗は横置きで1年度分。
-
-const STATUS_SHORT: Record<string, string> = {
-  伝道者: '伝',
-  補助開拓者: '補',
-  正規開拓者: '開',
-  特別開拓者: '特開',
-  野外の宣教者: '野宣',
-  不活発者: '不',
-}
 
 function outputNote() {
   const d = new Date()
@@ -88,7 +80,7 @@ export async function buildReportListPdf(year: number, month: number): Promise<U
       { text: String(r.bible_studies), align: 'right' },
       { text: r.hours > 0 ? String(r.hours) : '―', align: 'right' },
       { text: r.considered_hours > 0 ? String(r.considered_hours) : '', align: 'right' },
-      { text: STATUS_SHORT[r.pioneer_status_snapshot] ?? r.pioneer_status_snapshot, align: 'center' },
+      { text: shortStatus(r.pioneer_status_snapshot), align: 'center' },
       { text: r.no_count ? 'NC' : '', align: 'center' },
       { text: r.remarks ?? '' },
     ]
