@@ -733,7 +733,7 @@ export function StaffPage() {
           </div>
         </div>
       )}
-      <table className="crud-table">
+      <table className="crud-table crud-table--cards">
         <thead>
           <tr>
             <th>表示名</th>
@@ -745,9 +745,11 @@ export function StaffPage() {
         <tbody>
           {staff.map((s) => (
             <tr key={s.user_id}>
+              {/* data-label は狭い画面でカード表示にしたときの各項目の見出し(index.cssの
+                  .crud-table--cards)。表の見出し行と同じ言葉にしておくこと */}
               <td>{s.display_name}</td>
-              <td>{s.email ?? ''}</td>
-              <td>
+              <td data-label="メール">{s.email ?? ''}</td>
+              <td data-label="役割">
                 <select value={s.role} onChange={(e) => handleRoleChange(s, e.target.value as StaffRole)}>
                   {STAFF_ROLES.map((r) => (
                     <option key={r} value={r}>

@@ -193,34 +193,38 @@ input {
   background: var(--row-alt);
 }
 
-/* 名簿: 姓・名を広めに、他の列は折り返さない範囲で狭める */
-.roster-table {
-  table-layout: fixed;
-}
+/* 名簿: 姓・名を広めに、他の列は折り返さない範囲で狭める。
+   狭い画面ではカード表示(.crud-table--cards)に切り替わり列幅の概念が無くなるため、
+   表として並べる幅のときだけ適用する */
+@media (min-width: 769px) {
+  .roster-table {
+    table-layout: fixed;
+  }
 
-.roster-table th:nth-child(1),
-.roster-table td:nth-child(1) {
-  width: 36%;
-}
+  .roster-table th:nth-child(1),
+  .roster-table td:nth-child(1) {
+    width: 36%;
+  }
 
-.roster-table th:nth-child(2),
-.roster-table td:nth-child(2) {
-  width: 13%;
-}
+  .roster-table th:nth-child(2),
+  .roster-table td:nth-child(2) {
+    width: 13%;
+  }
 
-.roster-table th:nth-child(3),
-.roster-table td:nth-child(3) {
-  width: 13%;
-}
+  .roster-table th:nth-child(3),
+  .roster-table td:nth-child(3) {
+    width: 13%;
+  }
 
-.roster-table th:nth-child(4),
-.roster-table td:nth-child(4) {
-  width: 18%;
-}
+  .roster-table th:nth-child(4),
+  .roster-table td:nth-child(4) {
+    width: 18%;
+  }
 
-.roster-table th:nth-child(5),
-.roster-table td:nth-child(5) {
-  width: 9%;
+  .roster-table th:nth-child(5),
+  .roster-table td:nth-child(5) {
+    width: 9%;
+  }
 }
 
 .month-summary-table {
@@ -1010,6 +1014,197 @@ input {
 
 .card-total-label {
   text-align: right !important;
+}
+
+/* ---- 狭い画面(スマホ)向け ---- */
+
+/* 幅によって書き分けたい文言に付ける。既定は「表として出す幅」の方を見せる */
+.narrow-only {
+  display: none;
+}
+
+/* 列の多い表は、1行を1枚のカードに積み替える。見出し行を隠し、各セルの
+   data-label を見出しとして添える。表とカードで別々の要素を書くとどちらか
+   だけ直して食い違うため、**同じマークアップのまま見せ方だけ変える**方式にしている。
+   開拓者進捗は「月を横に並べる」ことに意味がある表なのでカード化せず、
+   従来どおり横スクロール(.table-scroll-y)のままにしている。 */
+@media (max-width: 768px) {
+  .page {
+    padding: 16px 12px 48px;
+  }
+
+  .wide-only {
+    display: none;
+  }
+
+  .narrow-only {
+    display: inline;
+  }
+
+  .crud-table--cards {
+    border: none;
+    background: none;
+  }
+
+  .crud-table--cards thead {
+    display: none;
+  }
+
+  .crud-table--cards,
+  .crud-table--cards tbody,
+  .crud-table--cards tr,
+  .crud-table--cards td {
+    display: block;
+    width: auto;
+  }
+
+  .crud-table--cards tr {
+    margin-bottom: 10px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    overflow: hidden;
+  }
+
+  .crud-table--cards td {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .crud-table--cards tr td:last-child {
+    border-bottom: none;
+  }
+
+  /* 中身が空のセルは行ごと出さない。表では空欄が「なし」を意味していたので、
+     カードでも「その項目が無い」= 出さない、で読み方は変わらない */
+  .crud-table--cards td:empty {
+    display: none;
+  }
+
+  .crud-table--cards td[data-label]::before {
+    content: attr(data-label);
+    flex: 0 0 6em;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  /* 1列目は氏名。見出しを付けず、カードの表題として出す。
+     編集フォームを差し込む行(colspan付き)は対象外 */
+  .crud-table--cards td:first-child:not([colspan]) {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-h);
+    background: var(--th-bg);
+  }
+
+  /* 縞模様はセルに背景を敷くため、カードでは表題の色と喧嘩する。カードは枠で区切られていて
+     行の境目が分かるので、縞は無効にする */
+  .crud-table--cards.crud-table--zebra tbody tr:nth-child(even) td {
+    background: none;
+  }
+
+  .crud-table--cards td.row-actions {
+    justify-content: flex-end;
+  }
+
+  /* 編集・新規追加のフォームを差し込む行は、カードの枠を二重にしない */
+  .crud-table--cards td[colspan] {
+    padding: 0;
+    border-bottom: none;
+  }
+
+  .crud-table--cards td[colspan] .publisher-inline-form {
+    margin-bottom: 0;
+    border: none;
+  }
+
+  /* 報告一覧のカードだけ、項目の並びを組み替える(列の意味が決まっている表なので専用クラス)。
+       1行目: 氏名 と 対象月(見出し無し・右寄せ)
+       2行目: 宣教・研究・時間・立場 を横に4つ。1つが狭いので、見出しを上・値を下の2行にして収める
+       以降 : 考慮・備考・NC・操作 は1項目1行
+     並べ替えにグリッドを使うのは、表とカードでマークアップを分けずに済ませるため。
+     セルの順番はHTMLのまま(立場は8番目)なので、位置は番号で明示的に指定する。
+     立場は狭い幅では短縮表記(正開・特開・野宣など)に切り替わるので、4列とも等幅で足りる */
+  .report-cards tbody tr {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .report-cards td:nth-child(1):not([colspan]) {
+    grid-area: 1 / 1 / 2 / 4;
+  }
+
+  .report-cards td:nth-child(2) {
+    grid-area: 1 / 4 / 2 / 5;
+    justify-content: flex-end;
+    background: var(--th-bg);
+  }
+
+  /* 氏名の右に並ぶので、見出しは付けない */
+  .report-cards td:nth-child(2)::before {
+    content: none;
+  }
+
+  .report-cards td:nth-child(3) {
+    grid-area: 2 / 1 / 3 / 2;
+  }
+
+  .report-cards td:nth-child(4) {
+    grid-area: 2 / 2 / 3 / 3;
+  }
+
+  .report-cards td:nth-child(5) {
+    grid-area: 2 / 3 / 3 / 4;
+  }
+
+  .report-cards td:nth-child(8) {
+    grid-area: 2 / 4 / 3 / 5;
+  }
+
+  .report-cards td:nth-child(3),
+  .report-cards td:nth-child(4),
+  .report-cards td:nth-child(5),
+  .report-cards td:nth-child(8) {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 2px;
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  .report-cards td:nth-child(3)::before,
+  .report-cards td:nth-child(4)::before,
+  .report-cards td:nth-child(5)::before,
+  .report-cards td:nth-child(8)::before {
+    flex: none;
+  }
+
+  /* 横に4つ並べる列は、値が空でも枠を残す(消すと右の項目がずれる)。
+     空欄が「なし」を意味するのは表と同じ。時間は0のとき空になる */
+  .report-cards td:nth-child(3):empty,
+  .report-cards td:nth-child(4):empty,
+  .report-cards td:nth-child(5):empty,
+  .report-cards td:nth-child(8):empty {
+    display: flex;
+  }
+
+  .report-cards td:nth-child(6),
+  .report-cards td:nth-child(7),
+  .report-cards td:nth-child(9),
+  .report-cards td:nth-child(10),
+  .report-cards td[colspan] {
+    grid-column: 1 / -1;
+  }
+
+  /* 縞模様の行でも、1行目(氏名・対象月)の帯の色は残す */
+  .crud-table--cards.crud-table--zebra tbody tr:nth-child(even) td:first-child:not([colspan]),
+  .report-cards.crud-table--zebra tbody tr:nth-child(even) td:nth-child(2) {
+    background: var(--th-bg);
+  }
 }
 
 @media print {

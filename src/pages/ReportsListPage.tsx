@@ -15,6 +15,7 @@ import { buildMonthSummary } from '../lib/monthSummary'
 import { closePeriod, fetchClosedPeriod, reopenPeriod, type ClosedPeriod } from '../lib/closedPeriods'
 import { useSessionPersistedState } from '../lib/usePersistedState'
 import { mapPioneerStatus } from '../lib/importParsing'
+import { shortStatus } from '../lib/statusShort'
 import { useAuth } from '../context/AuthContext'
 import { RowActionsMenu } from '../components/RowActionsMenu'
 
@@ -622,7 +623,7 @@ export function ReportsListPage() {
         </details>
       )}
       {error && <p className="error-text">{error}</p>}
-      <table className="crud-table crud-table--sticky-header crud-table--zebra">
+      <table className="crud-table crud-table--sticky-header crud-table--zebra crud-table--cards report-cards">
         <thead>
           <tr>
             <th>氏名</th>
@@ -632,7 +633,7 @@ export function ReportsListPage() {
             <th>時間</th>
             <th>考慮</th>
             <th>備考</th>
-            <th>立場(当時)</th>
+            <th>立場</th>
             <th>NC</th>
             {isAdmin && <th>操作</th>}
           </tr>
@@ -678,17 +679,26 @@ export function ReportsListPage() {
               </tr>
             ) : (
               <tr key={r.id}>
+                {/* data-label は狭い画面でカード表示にしたときの各項目の見出し(index.cssの
+                    .crud-table--cards)。表の見出し行と同じ言葉にしておくこと */}
                 <td>{publisherName(r.publisher_id)}</td>
                 {/* 全行に対象月を出す。前月から「翌月に加算」で回ってきた行(counted_in_monthが入っている行)は
                     同じ人が2つの月で並ぶことがあるため、赤字で区別する */}
-                <td className={r.counted_in_month !== null ? 'carried-over-month' : undefined}>{r.month}月分</td>
-                <td>{r.preached ? '✓' : ''}</td>
-                <td>{r.bible_studies}</td>
-                <td>{r.hours || ''}</td>
-                <td>{r.considered_hours || ''}</td>
-                <td>{r.remarks ?? ''}</td>
-                <td>{r.pioneer_status_snapshot}</td>
-                <td>{r.no_count ? 'NC' : ''}</td>
+                <td data-label="対象月" className={r.counted_in_month !== null ? 'carried-over-month' : undefined}>
+                  {r.month}月分
+                </td>
+                <td data-label="宣教">{r.preached ? '✓' : ''}</td>
+                <td data-label="研究">{r.bible_studies}</td>
+                <td data-label="時間">{r.hours || ''}</td>
+                <td data-label="考慮">{r.considered_hours || ''}</td>
+                <td data-label="備考">{r.remarks ?? ''}</td>
+                {/* 表として出す幅では正式名称、カード表示の狭い幅では短縮表記(PDFと同じもの)。
+                    切り替えはindex.cssの .wide-only / .narrow-only */}
+                <td data-label="立場">
+                  <span className="wide-only">{r.pioneer_status_snapshot}</span>
+                  <span className="narrow-only">{shortStatus(r.pioneer_status_snapshot)}</span>
+                </td>
+                <td data-label="NC">{r.no_count ? 'NC' : ''}</td>
                 {isAdmin && (
                   <td className="row-actions">
                     <RowActionsMenu onEdit={() => startEdit(r)} onDelete={() => handleDelete(r)} />

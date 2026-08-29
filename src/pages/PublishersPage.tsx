@@ -748,7 +748,7 @@ export function PublishersPage() {
           </select>
         </label>
       </div>
-      <table className="crud-table crud-table--sticky-header crud-table--zebra roster-table">
+      <table className="crud-table crud-table--sticky-header crud-table--zebra crud-table--cards roster-table">
         <thead>
           <tr>
             <th>氏名</th>
@@ -800,11 +800,13 @@ export function PublishersPage() {
               </tr>
             ) : (
               <tr key={p.id}>
+                {/* data-label は狭い画面でカード表示にしたときの各項目の見出し(index.cssの
+                    .crud-table--cards)。表の見出し行と同じ言葉にしておくこと */}
                 <td>{p.last_name} {p.first_name}</td>
-                <td>{groupName(p.group_id)}</td>
-                <td>{p.qualification ?? ''}</td>
-                <td>{p.pioneer_status}</td>
-                <td>{p.is_active ? '在籍' : '転出/休止'}</td>
+                <td data-label="グループ">{groupName(p.group_id)}</td>
+                <td data-label="資格">{p.qualification ?? ''}</td>
+                <td data-label="立場">{p.pioneer_status}</td>
+                <td data-label="在籍">{p.is_active ? '在籍' : '転出/休止'}</td>
                 {isAdmin && (
                   <td className="row-actions">
                     <RowActionsMenu onEdit={() => startEdit(p)} onDelete={() => handleDelete(p)} />
