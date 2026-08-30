@@ -1,0 +1,1000 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#4a1fa8">
+<meta name="robots" content="noindex">
+<title>奉仕報告管理 セットアップ手順</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+  :root {
+    --paper: #f6f4f9;
+    --card: #ffffff;
+    --ink: #17151f;
+    --body: #4a4655;
+    --muted: #6f6a7e;
+    --rule: #e4e0ec;
+    --accent: #5b2ee0;
+    --accent-soft: #efeaff;
+    --warn-ink: #9a4514;
+    --warn-bg: #fdf1e7;
+    --warn-rule: #eccbb0;
+
+    /* 画面サンプルの中身。読み手の端末と同じ見え方になるよう、明暗どちらにも合わせる */
+    --shot-bg: #fafafa;
+    --shot-surface: #ffffff;
+    --shot-text: #3f3d45;
+    --shot-head: #08060d;
+    --shot-rule: #e2e1e6;
+    --shot-accent: #6b3bff;
+    --shot-th: #f3efff;
+    --ios-bg: #f2f2f6;
+    --ios-sheet: #ffffff;
+    --ios-text: #1c1c1e;
+    --ios-sub: #8a8a8e;
+    --ios-rule: #dcdce0;
+    --ios-bar: #ececef;
+
+    --sans: 'Noto Sans JP', system-ui, 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
+    --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #131118;
+      --card: #1c1a24;
+      --ink: #f2eff8;
+      --body: #bcb7c8;
+      --muted: #928da1;
+      --rule: #2f2b3a;
+      --accent: #ab90ff;
+      --accent-soft: #241d3d;
+      --warn-ink: #e8a973;
+      --warn-bg: #2a1f16;
+      --warn-rule: #4d3a26;
+
+      --shot-bg: #17171b;
+      --shot-surface: #1f1f25;
+      --shot-text: #d4d3d8;
+      --shot-head: #f3f4f6;
+      --shot-rule: #333339;
+      --shot-accent: #a389ff;
+      --shot-th: #332f46;
+      --ios-bg: #000000;
+      --ios-sheet: #1c1c1e;
+      --ios-text: #f2f2f7;
+      --ios-sub: #98989f;
+      --ios-rule: #38383c;
+      --ios-bar: #2c2c2e;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #131118;
+    --card: #1c1a24;
+    --ink: #f2eff8;
+    --body: #bcb7c8;
+    --muted: #928da1;
+    --rule: #2f2b3a;
+    --accent: #ab90ff;
+    --accent-soft: #241d3d;
+    --warn-ink: #e8a973;
+    --warn-bg: #2a1f16;
+    --warn-rule: #4d3a26;
+
+    --shot-bg: #17171b;
+    --shot-surface: #1f1f25;
+    --shot-text: #d4d3d8;
+    --shot-head: #f3f4f6;
+    --shot-rule: #333339;
+    --shot-accent: #a389ff;
+    --shot-th: #332f46;
+    --ios-bg: #000000;
+    --ios-sheet: #1c1c1e;
+    --ios-text: #f2f2f7;
+    --ios-sub: #98989f;
+    --ios-rule: #38383c;
+    --ios-bar: #2c2c2e;
+  }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--body);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.85;
+  }
+
+  .wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 40px 20px 72px;
+  }
+
+  h1, h2, h3 {
+    color: var(--ink);
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  .masthead {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-bottom: 28px;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+
+  h1 {
+    font-size: clamp(28px, 6vw, 40px);
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  .lede {
+    font-size: 17px;
+    max-width: 34em;
+  }
+
+  .prep {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin: 28px 0 8px;
+    padding: 22px;
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 14px;
+  }
+
+  .prep h2 {
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .prep p {
+    margin: 0;
+    font-size: 15.5px;
+  }
+
+  .url {
+    font-family: var(--mono);
+    font-size: 14px;
+    word-break: break-all;
+    color: var(--ink);
+    background: var(--accent-soft);
+    border-radius: 8px;
+    padding: 12px 14px;
+    line-height: 1.6;
+  }
+
+  .notice {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 16px 18px;
+    background: var(--warn-bg);
+    border: 1px solid var(--warn-rule);
+    border-radius: 10px;
+    color: var(--warn-ink);
+  }
+
+  .notice strong {
+    font-weight: 700;
+    font-size: 15px;
+  }
+
+  .notice p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.75;
+    color: var(--warn-ink);
+  }
+
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 36px;
+  }
+
+  .step {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 14px;
+    padding: 24px 22px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  @media (min-width: 760px) {
+    .step {
+      grid-template-columns: 1fr 216px;
+      gap: 28px;
+    }
+  }
+
+  .step-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .step-no {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+  }
+
+  .step h3 {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.45;
+  }
+
+  .step p {
+    margin: 0;
+    font-size: 15.5px;
+  }
+
+  .step ul {
+    margin: 0;
+    padding-left: 1.2em;
+    font-size: 15.5px;
+  }
+
+  .step li + li {
+    margin-top: 4px;
+  }
+
+  .aside {
+    font-size: 14px;
+    color: var(--muted);
+    border-left: 2px solid var(--rule);
+    padding-left: 12px;
+    line-height: 1.7;
+  }
+
+  /* ---- 端末の枠と画面サンプル ---- */
+
+  .phone {
+    justify-self: center;
+    width: 216px;
+    background: #1f1d26;
+    border-radius: 30px;
+    padding: 9px;
+  }
+
+  .screen {
+    background: var(--shot-bg);
+    border-radius: 22px;
+    overflow: hidden;
+    color: var(--shot-text);
+    font-size: 11px;
+    line-height: 1.6;
+    min-height: 268px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .screen.ios {
+    background: var(--ios-bg);
+    color: var(--ios-text);
+  }
+
+  .island {
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--shot-surface);
+  }
+
+  .screen.ios .island {
+    background: transparent;
+  }
+
+  .island span {
+    width: 52px;
+    height: 9px;
+    border-radius: 5px;
+    background: #1f1d26;
+  }
+
+  .shot {
+    flex: 1;
+    padding: 12px 11px;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    min-width: 0;
+  }
+
+  .shot-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--shot-head);
+    line-height: 1.4;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .field span {
+    font-size: 9.5px;
+  }
+
+  .field i {
+    display: block;
+    height: 22px;
+    border: 1px solid var(--shot-rule);
+    border-radius: 6px;
+    background: var(--shot-surface);
+  }
+
+  .field i.filled::before {
+    content: "••••••••";
+    display: block;
+    padding: 3px 7px;
+    letter-spacing: 0.1em;
+    color: var(--shot-head);
+    font-size: 10px;
+  }
+
+  .btn {
+    background: var(--shot-accent);
+    color: #fff;
+    text-align: center;
+    border-radius: 7px;
+    padding: 7px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .navbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    background: var(--shot-surface);
+    border-bottom: 1px solid var(--shot-rule);
+    padding: 8px 9px;
+  }
+
+  .navbar b {
+    font-size: 9px;
+    font-weight: 500;
+    padding: 3px 6px;
+    border-radius: 5px;
+  }
+
+  .navbar b.on {
+    background: var(--shot-accent);
+    color: #fff;
+    font-weight: 700;
+  }
+
+  .reportcard {
+    border: 1px solid var(--shot-rule);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--shot-surface);
+  }
+
+  .reportcard .head {
+    display: flex;
+    justify-content: space-between;
+    background: var(--shot-th);
+    color: var(--shot-head);
+    font-weight: 700;
+    padding: 5px 8px;
+    font-size: 10px;
+  }
+
+  .reportcard .four {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    text-align: center;
+    padding: 5px 4px;
+    font-size: 8.5px;
+    gap: 2px;
+  }
+
+  .reportcard .four b {
+    display: block;
+    font-weight: 400;
+    color: var(--shot-text);
+    opacity: 0.8;
+  }
+
+  .reportcard .four u {
+    display: block;
+    text-decoration: none;
+    color: var(--shot-head);
+    font-size: 9.5px;
+  }
+
+  /* iOS の部品 */
+
+  .safari-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--ios-bar);
+    border-top: 1px solid var(--ios-rule);
+    padding: 8px 9px;
+    color: var(--ios-sub);
+    font-size: 12px;
+  }
+
+  .safari-bar .pill {
+    flex: 1;
+    background: var(--ios-sheet);
+    border-radius: 12px;
+    text-align: center;
+    padding: 3px;
+    font-size: 8.5px;
+    color: var(--ios-text);
+  }
+
+  .safari-bar .dots {
+    color: var(--ios-text);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+
+  .safari-bar .dots.hit {
+    background: var(--shot-accent);
+    color: #fff;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .menu {
+    margin: 0 8px 6px auto;
+    width: 130px;
+    background: var(--ios-sheet);
+    border: 1px solid var(--ios-rule);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .menu div {
+    padding: 7px 10px;
+    font-size: 9.5px;
+    border-top: 1px solid var(--ios-rule);
+    color: var(--ios-text);
+  }
+
+  .menu div:first-child {
+    border-top: none;
+  }
+
+  .menu div.hit {
+    background: var(--shot-accent);
+    color: #fff;
+    font-weight: 700;
+  }
+
+  .sheet {
+    margin-top: auto;
+    background: var(--ios-sheet);
+    border-top-left-radius: 14px;
+    border-top-right-radius: 14px;
+    padding: 9px 8px 0;
+  }
+
+  .sheet-head {
+    display: flex;
+    gap: 7px;
+    align-items: center;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--ios-rule);
+  }
+
+  .sheet-head span {
+    font-size: 9px;
+    color: var(--ios-sub);
+    line-height: 1.35;
+  }
+
+  .sheet-head b {
+    display: block;
+    font-size: 10px;
+    color: var(--ios-text);
+  }
+
+  .skip {
+    text-align: center;
+    font-size: 8px;
+    color: var(--ios-sub);
+    padding: 6px 0;
+    border-bottom: 1px solid var(--ios-rule);
+  }
+
+  .list div {
+    padding: 7px 4px;
+    font-size: 9.5px;
+    border-bottom: 1px solid var(--ios-rule);
+    color: var(--ios-text);
+  }
+
+  .list div.hit {
+    background: var(--shot-accent);
+    color: #fff;
+    font-weight: 700;
+    border-radius: 6px;
+    padding-left: 7px;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    font-size: 10px;
+    color: var(--ios-text);
+  }
+
+  .topbar .add {
+    background: #0a84ff;
+    color: #fff;
+    border-radius: 11px;
+    padding: 2px 10px;
+    font-weight: 700;
+  }
+
+  .iconrow {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    background: var(--ios-sheet);
+    padding: 9px 10px;
+  }
+
+  .appicon {
+    width: 38px;
+    height: 38px;
+    border-radius: 9px;
+    background: linear-gradient(150deg, #7b4bd8, #3d1a8f 70%);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    flex: 0 0 auto;
+    line-height: 1;
+  }
+
+  .appicon i {
+    font-style: normal;
+    font-size: 6.5px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .appicon u {
+    text-decoration: none;
+    font-size: 4.5px;
+    opacity: 0.85;
+    margin-top: 1px;
+  }
+
+  .namefield b {
+    display: block;
+    font-size: 10px;
+    color: var(--ios-text);
+  }
+
+  .namefield span {
+    display: block;
+    font-size: 8px;
+    color: var(--ios-sub);
+    word-break: break-all;
+  }
+
+  .toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--ios-sheet);
+    padding: 9px 10px;
+    margin-top: 7px;
+    font-size: 9.5px;
+    color: var(--ios-text);
+  }
+
+  .toggle em {
+    font-style: normal;
+    width: 30px;
+    height: 17px;
+    border-radius: 9px;
+    background: #34c759;
+    position: relative;
+    flex: 0 0 auto;
+  }
+
+  .toggle em::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: #fff;
+  }
+
+  .homegrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px 8px;
+    padding: 16px 12px;
+  }
+
+  .homegrid u {
+    display: block;
+    height: 34px;
+    border-radius: 9px;
+    background: rgba(140, 138, 150, 0.35);
+    text-decoration: none;
+  }
+
+  .homegrid .ours {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .homegrid .ours .appicon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .homegrid .ours span {
+    font-size: 7px;
+    color: var(--ios-text);
+    text-align: center;
+  }
+
+  .caption {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+
+  /* ---- うまくいかないとき ---- */
+
+  .trouble {
+    margin-top: 44px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .trouble h2 {
+    font-size: 22px;
+    font-weight: 700;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .qa {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    padding: 18px 20px;
+  }
+
+  .qa h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .qa p {
+    margin: 0;
+    font-size: 15px;
+  }
+
+  footer {
+    margin-top: 44px;
+    padding-top: 18px;
+    border-top: 1px solid var(--rule);
+    font-size: 13px;
+    color: var(--muted);
+  }
+</style>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead">
+    <div class="eyebrow">iPhone / Safari</div>
+    <h1>奉仕報告管理<br>セットアップ手順</h1>
+    <p class="lede">
+      招待メールを受け取ってから、ホーム画面のアイコンでアプリのように開けるようになるまでの手順です。5分ほどで終わります。
+    </p>
+  </header>
+
+  <section class="prep">
+    <h2>始める前に</h2>
+    <p>アプリのURLはこちらです。招待メールのリンクからも同じ場所に進みます。</p>
+    <div class="url">https://tsuda-cong.github.io/hoshi-houkoku-app/</div>
+    <div class="notice">
+      <strong>かならず Safari で開いてください</strong>
+      <p>ホーム画面に追加する手順は Safari のものです。ほかのブラウザで開くと、この手順どおりの画面が出ません。</p>
+    </div>
+  </section>
+
+  <div class="steps">
+
+    <section class="step">
+      <div class="step-body">
+        <div class="step-no">STEP 01</div>
+        <h3>招待メールのリンクを開く</h3>
+        <p>管理者が招待すると、登録したメールアドレスに招待メールが届きます。本文にあるリンクをタップしてください。</p>
+        <p class="aside">メールは英語で届きます。文面は表示例と異なることがあります。見当たらないときは迷惑メールフォルダもご確認ください。</p>
+      </div>
+      <div>
+        <div class="phone">
+          <div class="screen">
+            <div class="island"><span></span></div>
+            <div class="shot">
+              <div class="shot-title">You have been invited</div>
+              <div style="font-size:9.5px">You have been invited to create a user on 奉仕報告管理.</div>
+              <div style="font-size:10.5px;color:var(--shot-accent);text-decoration:underline;font-weight:700">Accept the invite</div>
+            </div>
+          </div>
+        </div>
+        <p class="caption">メールアプリ</p>
+      </div>
+    </section>
+
+    <section class="step">
+      <div class="step-body">
+        <div class="step-no">STEP 02</div>
+        <h3>パスワードを設定する</h3>
+        <p>リンクを開くと、パスワードの設定画面が出ます。ご自分で決めたパスワードを2回入力して「設定する」を押してください。</p>
+        <ul>
+          <li>6文字以上にしてください</li>
+          <li>2つの欄には同じものを入力します</li>
+          <li>忘れないよう控えておいてください</li>
+        </ul>
+      </div>
+      <div>
+        <div class="phone">
+          <div class="screen">
+            <div class="island"><span></span></div>
+            <div class="shot">
+              <div class="shot-title">パスワードを設定してください</div>
+              <div class="field"><span>新しいパスワード</span><i class="filled"></i></div>
+              <div class="field"><span>確認のため再入力</span><i class="filled"></i></div>
+              <div class="btn">設定する</div>
+            </div>
+          </div>
+        </div>
+        <p class="caption">パスワード設定画面</p>
+      </div>
+    </section>
+
+    <section class="step">
+      <div class="step-body">
+        <div class="step-no">STEP 03</div>
+        <h3>アプリの画面が開く</h3>
+        <p>設定が終わると自動で読み込み直され、アプリの画面になります。上部の項目で画面を切り替えます。</p>
+        <p class="aside">「監督者」として招待された方は、すべての内容を見られますが、追加・編集・削除はできません。「設定」も表示されません。</p>
+      </div>
+      <div>
+        <div class="phone">
+          <div class="screen">
+            <div class="island"><span></span></div>
+            <div class="navbar">
+              <b class="on">報告一覧</b><b>提出状況</b><b>名簿</b><b>開拓者進捗</b><b>帳票印刷</b><b>設定</b>
+            </div>
+            <div class="shot">
+              <div class="reportcard">
+                <div class="head"><span>山田 太郎</span><span>8月分</span></div>
+                <div class="four">
+                  <span><b>宣教</b><u>✓</u></span>
+                  <span><b>研究</b><u>2</u></span>
+                  <span><b>時間</b><u>12</u></span>
+                  <span><b>立場</b><u>伝</u></span>
+                </div>
+              </div>
+              <div class="reportcard">
+                <div class="head"><span>鈴木 花子</span><span>8月分</span></div>
+                <div class="four">
+                  <span><b>宣教</b><u>✓</u></span>
+                  <span><b>研究</b><u>4</u></span>
+                  <span><b>時間</b><u>52</u></span>
+                  <span><b>立場</b><u>正開</u></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="caption">ログイン後の画面</p>
+      </div>
+    </section>
+
+    <section class="step">
+      <div class="step-body">
+        <div class="step-no">STEP 04</div>
+        <h3>右下の「⋯」から「共有」を選ぶ</h3>
+        <p>画面のいちばん下に、左右の矢印・アドレス・「⋯」が並んだ列があります。右端の「⋯」を押すと小さなメニューが出るので、いちばん上の「共有」を選びます。</p>
+        <p class="aside">下の列が見当たらないときは、画面を少し下に引っ張ると出てきます。</p>
+      </div>
+      <div>
+        <div class="phone">
+          <div class="screen ios">
+            <div class="island"><span></span></div>
+            <div style="flex:1"></div>
+            <div class="menu">
+              <div class="hit">共有</div>
+              <div>ブックマークに追加</div>
+              <div>ブックマークの追加先…</div>
+              <div>新規タブ</div>
+            </div>
+            <div class="safari-bar">
+              <span aria-hidden="true">‹</span>
+              <span aria-hidden="true">›</span>
+              <span class="pill">tsuda-cong.github.io</span>
+              <span class="dots hit" aria-label="メニュー">⋯</span>
+            </div>
+          </div>
+        </div>
+        <p class="caption">Safari 下部のメニュー</p>
+      </div>
+    </section>
+
+    <section class="step">
+      <div class="step-body">
+        <div class="step-no">STEP 05</div>
+        <h3>下にスクロールして「ホーム画面に追加」</h3>
+        <p>下から共有メニューが出てきます。連絡先やアプリのアイコンが並ぶ部分は飛ばして、その下の文字の一覧まで指で上にスクロールしてください。</p>
+        <p>一覧のいちばん下にある「ホーム画面に追加」を押します。</p>
+        <p class="aside">上のほうには出てきません。「ページを検索」の次にあります。</p>
+      </div>
+      <div>
+        <div class="phone">
+          <div class="screen ios">
+            <div class="island"><span></span></div>
+            <div class="sheet">
+              <div class="sheet-head">
+                <span class="appicon"><i>PUBLISHER</i><i>RECORD</i><u>TSUDA CONG</u></span>
+                <span><b>奉仕報告管理</b>tsuda-cong.github.io</span>
+              </div>
+              <div class="skip">連絡先・アプリのアイコン（省略）</div>
+              <div class="list">
+                <div>お気に入りに追加</div>
+                <div>クイックメモに追加</div>
+                <div>ページを検索</div>
+                <div class="hit">ホーム画面に追加</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="caption">共有メニュー</p>
+      </div>
+    </section>
+
+    <section class="step">
+      <div class="step-body">
+        <div class="step-no">STEP 06</div>
+        <h3>「Webアプリとして開く」を確認して「追加」</h3>
+        <p>アイコンと名前を確認する画面が出ます。名前は「奉仕報告管理」のままで構いません。</p>
+        <div class="notice">
+          <strong>「Webアプリとして開く」は緑（オン）のままにしてください</strong>
+          <p>ここをオフにすると、ホーム画面から開いてもふつうのブラウザの画面になります。オンであれば、アプリのように開きます。</p>
+        </div>
+        <p>確認できたら、右上の「追加」を押します。</p>
+      </div>
+      <div>
+        <div class="phone">
+          <div class="screen ios">
+            <div class="island"><span></span></div>
+            <div class="topbar"><span aria-hidden="true">✕</span><span style="font-weight:700">ホーム画面に追加</span><span class="add">追加</span></div>
+            <div class="iconrow">
+              <span class="appicon"><i>PUBLISHER</i><i>RECORD</i><u>TSUDA CONG</u></span>
+              <span class="namefield"><b>奉仕報告管理</b><span>https://tsuda-cong.github.io/hoshi-h…</span></span>
+            </div>
+            <div class="toggle"><span>Webアプリとして開く</span><em></em></div>
+            <p style="margin:7px 10px 0;font-size:8px;color:var(--ios-sub);line-height:1.6">この Web サイトにすばやくアクセスできるようにホーム画面にアイコンを追加します。</p>
+          </div>
+        </div>
+        <p class="caption">追加の確認</p>
+      </div>
+    </section>
+
+    <section class="step">
+      <div class="step-body">
+        <div class="step-no">STEP 07</div>
+        <h3>ホーム画面のアイコンから開く</h3>
+        <p>ホーム画面に紫色の「PUBLISHER RECORD」のアイコンが増えます。次からはこのアイコンから開いてください。アドレスバーが出ず、ふつうのアプリのように使えます。</p>
+        <div class="notice">
+          <strong>もう一度ログインを求められることがあります</strong>
+          <p>ホーム画面のアイコンから開いた場合、Safari とは別あつかいになるためです。登録したメールアドレスと、手順2で決めたパスワードを入力してください。次からは入力なしで開きます。</p>
+        </div>
+      </div>
+      <div>
+        <div class="phone">
+          <div class="screen ios">
+            <div class="island"><span></span></div>
+            <div class="homegrid">
+              <u></u><u></u><u></u><u></u>
+              <u></u><u></u><u></u><u></u>
+              <span class="ours"><span class="appicon"><i>PUBLISHER</i><i>RECORD</i><u>TSUDA CONG</u></span><span>奉仕報告管理</span></span>
+            </div>
+          </div>
+        </div>
+        <p class="caption">ホーム画面</p>
+      </div>
+    </section>
+
+  </div>
+
+  <section class="trouble">
+    <h2>うまくいかないとき</h2>
+
+    <div class="qa">
+      <h3>「招待リンクが無効か期限切れです」と出る</h3>
+      <p>招待リンクには期限があります。管理者に、もう一度招待を送ってもらってください。</p>
+    </div>
+
+    <div class="qa">
+      <h3>パスワードを忘れた</h3>
+      <p>招待し直す必要はありません。管理者に、パスワード再設定メールの送信を頼んでください。届いたリンクから、手順2と同じ画面でやり直せます。</p>
+    </div>
+
+    <div class="qa">
+      <h3>「ホーム画面に追加」が見つからない</h3>
+      <p>Safari で開いているかご確認ください。ほかのブラウザではこの項目が出ません。Safari であれば、共有メニューの文字の一覧をいちばん下まで探してください。</p>
+    </div>
+
+    <div class="qa">
+      <h3>アイコンから開いてもブラウザの画面になる</h3>
+      <p>追加するときに「Webアプリとして開く」がオフだった可能性があります。アイコンを削除して、手順4からやり直してください。</p>
+    </div>
+
+    <div class="qa">
+      <h3>ログインできない</h3>
+      <p>メールアドレスは、招待を受け取ったものと同じである必要があります。それでも入れないときは管理者にご連絡ください。</p>
+    </div>
+  </section>
+
+  <footer>
+    奉仕報告管理 — 報告の提出は、ログインなしで使える報告フォームから行えます。このアプリは名簿・集計・帳票のためのものです。
+  </footer>
+</div>
+</body>
+</html>
