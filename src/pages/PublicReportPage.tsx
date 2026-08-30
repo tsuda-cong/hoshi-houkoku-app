@@ -294,6 +294,12 @@ export function PublicReportPage() {
       setValidationError('「その他」の内容を入力してください')
       return
     }
+    // 理由だけ選んで時間を入れ忘れると、0時間のまま保存され備考にも「0h」と残る。
+    // 後から管理画面で気づいて直すことになるため、送信の時点で止める
+    if (form.hasConsideration && (form.consideredHours.trim() === '' || Number(form.consideredHours) <= 0)) {
+      setValidationError('考慮時間を入力してください（考慮の理由を選んだ場合は0時間にできません）')
+      return
+    }
 
     const consideredHoursRaw = form.hasConsideration ? Number(form.consideredHours) || 0 : 0
     const cappedConsideredHours = form.hasConsideration
