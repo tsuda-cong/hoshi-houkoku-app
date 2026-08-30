@@ -15,6 +15,13 @@ import { buildMonthSummary } from '../lib/monthSummary'
 import { closePeriod, fetchClosedPeriod, reopenPeriod, type ClosedPeriod } from '../lib/closedPeriods'
 import { useSessionPersistedState } from '../lib/usePersistedState'
 import { mapPioneerStatus } from '../lib/importParsing'
+import {
+  applyConsideredHoursToRemarks,
+  DEFAULT_REPORT_RULES,
+  fetchReportRules,
+  parseConsiderationRemarks,
+  type ReportRules,
+} from '../lib/reportRules'
 import { shortStatus } from '../lib/statusShort'
 import { useAuth } from '../context/AuthContext'
 import { RowActionsMenu } from '../components/RowActionsMenu'
@@ -58,7 +65,10 @@ function draftFromReport(r: ServiceReport): ReportDraft {
     preached: r.preached,
     bible_studies: String(r.bible_studies),
     hours: String(r.hours),
-    considered_hours: String(r.considered_hours),
+    // 備考に考慮の見出しがあれば、欄には「本人が申告した時間」を出す。
+    // 保存されている considered_hours は上限適用後の値なので、そのまま出すと
+    // 開いて保存し直しただけで申告時間が上限後の値に書き換わってしまう
+    considered_hours: String(parseConsiderationRemarks(r.remarks)?.consideredHoursRaw ?? r.considered_hours),
     remarks: r.remarks ?? '',
     pioneer_status_snapshot: r.pioneer_status_snapshot,
     no_count: r.no_count,
@@ -66,15 +76,23 @@ function draftFromReport(r: ServiceReport): ReportDraft {
   }
 }
 
-function draftToPatch(d: ReportDraft, year: number, month: number) {
+function draftToPatch(d: ReportDraft, year: number, month: number, rules: ReportRules) {
   // 「翌月に加算」は会衆集計だけの付け替え。伝道者記録は year / month のまま
   const carried = d.carryOver ? nextServicePeriod(year, month) : null
+  const hours = Number(d.hours) || 0
+  // 考慮欄は「本人が申告した時間」。備考の見出しの数字も合わせ、上限は報告フォームと同じ規則でかける
+  const { remarks, cappedConsideredHours } = applyConsideredHoursToRemarks(
+    d.remarks.trim() || null,
+    hours,
+    Number(d.considered_hours) || 0,
+    rules,
+  )
   return {
     preached: d.preached,
     bible_studies: Number(d.bible_studies) || 0,
-    hours: Number(d.hours) || 0,
-    considered_hours: Number(d.considered_hours) || 0,
-    remarks: d.remarks.trim() || null,
+    hours,
+    considered_hours: cappedConsideredHours,
+    remarks,
     pioneer_status_snapshot: d.pioneer_status_snapshot,
     no_count: d.no_count,
     counted_in_year: carried?.year ?? null,
@@ -198,6 +216,14 @@ export function ReportsListPage() {
   // 月送りボタンで動ける範囲。報告が1件も無ければ null
   const [oldestPeriod, setOldestPeriod] = useState<ServicePeriod | null>(null)
   const [latestPeriod, setLatestPeriod] = useState<ServicePeriod | null>(null)
+  // 考慮時間の上限。読み込めなければ既定値のまま(報告フォームと同じ扱い)
+  const [rules, setRules] = useState<ReportRules>(DEFAULT_REPORT_RULES)
+
+  useEffect(() => {
+    fetchReportRules()
+      .then(setRules)
+      .catch(() => {})
+  }, [])
 
   useLatestReportedPeriodDefault('reportList.year', setYear, setMonth)
 
@@ -364,7 +390,7 @@ export function ReportsListPage() {
           publisher_id: draft.publisher_id,
           year,
           month,
-          ...draftToPatch(draft, year, month),
+          ...draftToPatch(draft, year, month, rules),
         })
         if (error) throw error
       } else if (editingId) {
@@ -373,7 +399,7 @@ export function ReportsListPage() {
         const target = reports.find((r) => r.id === editingId)
         const { error } = await supabase
           .from('service_reports')
-          .update(draftToPatch(draft, target?.year ?? year, target?.month ?? month))
+          .update(draftToPatch(draft, target?.year ?? year, target?.month ?? month, rules))
           .eq('id', editingId)
         if (error) throw error
       }

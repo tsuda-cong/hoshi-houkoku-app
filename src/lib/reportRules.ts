@@ -81,9 +81,71 @@ export function composeRemarks({
 
   if (reasons.length > 0) {
     const reasonLabels = reasons.map((r) => (r === 'その他' ? otherReasonText.trim() || 'その他' : r)).join('、')
-    const prefix = `${reasonLabels} ${consideredHoursRaw}h（加算時間 ${cappedConsideredHours}h）`
-    return [prefix, own].filter(Boolean).join(' ')
+    return [considerationPrefix(reasonLabels, consideredHoursRaw, cappedConsideredHours), own].filter(Boolean).join(' ')
   }
 
   return own
+}
+
+function considerationPrefix(reasonLabels: string, consideredHoursRaw: number, cappedConsideredHours: number): string {
+  return `${reasonLabels} ${consideredHoursRaw}h（加算時間 ${cappedConsideredHours}h）`
+}
+
+// composeRemarks が付けた考慮の見出しを読み戻すための正規表現。
+// **considerationPrefix と対で必ず一緒に直すこと**(片方だけ変えると読めなくなる)。
+// 理由に「その他」の自由入力が入ると空白を含みうるため、後ろの固定文字列を手掛かりに最短一致で切る
+const CONSIDERATION_PREFIX_RE = /^(.+?) (\d+(?:\.\d+)?)h（加算時間 (\d+(?:\.\d+)?)h）[ 　]?/
+
+export interface ParsedConsiderationRemarks {
+  /** 「巡回大会奉仕」「その他の自由入力」など、理由の表示名をそのまま */
+  reasonLabels: string
+  /** 本人が申告した考慮時間 */
+  consideredHoursRaw: number
+  /** 上限を適用した後の、実際に加算する時間 */
+  cappedConsideredHours: number
+  /** 見出しより後ろの、本人が書いた備考 */
+  ownRemarks: string
+}
+
+/** 備考が composeRemarks の作った考慮の見出しで始まっていれば、その中身を取り出す */
+export function parseConsiderationRemarks(remarks: string | null): ParsedConsiderationRemarks | null {
+  if (!remarks) return null
+  const m = CONSIDERATION_PREFIX_RE.exec(remarks)
+  if (!m) return null
+  return {
+    reasonLabels: m[1],
+    consideredHoursRaw: Number(m[2]),
+    cappedConsideredHours: Number(m[3]),
+    ownRemarks: remarks.slice(m[0].length),
+  }
+}
+
+/**
+ * ③管理画面で考慮時間を直したときに、備考の中の数字も合わせる。
+ *
+ * 備考の「〜 30h（加算時間 30h）」は保存時に組み立てた**ただの文章**で、考慮時間の数値とは
+ * 別に保存されている。数値だけ直すと文章が古いまま取り残され、帳票にはその古い文章が出る。
+ * 上限は報告フォームと同じ capConsideredHours を通す(理由は備考の見出しから読み取る)。
+ *
+ * 見出しが無い備考(手入力のものなど)は何も足さずにそのまま返す。考慮の理由が分からないため。
+ */
+export function applyConsideredHoursToRemarks(
+  remarks: string | null,
+  hours: number,
+  consideredHoursRaw: number,
+  rules: ReportRules = DEFAULT_REPORT_RULES,
+): { remarks: string | null; cappedConsideredHours: number } {
+  const parsed = parseConsiderationRemarks(remarks)
+  if (!parsed) return { remarks, cappedConsideredHours: consideredHoursRaw }
+
+  // 見出しに免除理由(既定では「開拓者学校」)が含まれていれば上限をかけない
+  const reasons = parsed.reasonLabels.includes(rules.consideredCapExemptReason)
+    ? ([rules.consideredCapExemptReason] as ConsiderationReason[])
+    : ([] as ConsiderationReason[])
+  const capped = capConsideredHours(hours, consideredHoursRaw, reasons, rules)
+  const prefix = considerationPrefix(parsed.reasonLabels, consideredHoursRaw, capped)
+  return {
+    remarks: [prefix, parsed.ownRemarks].filter(Boolean).join(' '),
+    cappedConsideredHours: capped,
+  }
 }
