@@ -22,6 +22,39 @@ import { actualServiceYear } from '../lib/serviceYear'
 
 const REPORT_LINK = `${window.location.origin}${window.location.pathname}#/submit`
 
+// スタッフ向けのセットアップ手順書(public/manual.html)。招待した人に渡す。
+// 報告リンクと同じく、開いているURLから組み立てるので置き場所が変わっても追随する
+const MANUAL_LINK = `${window.location.origin}${window.location.pathname}manual.html`
+
+function ManualLinkRow() {
+  const [copied, setCopied] = useState(false)
+
+  async function handleCopy() {
+    await navigator.clipboard.writeText(MANUAL_LINK)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <>
+      <div className="publisher-form-grid">
+        <label>
+          セットアップ手順書
+          <input value={MANUAL_LINK} readOnly onFocus={(e) => e.target.select()} />
+        </label>
+      </div>
+      <div className="publisher-form-actions">
+        <button type="button" onClick={handleCopy}>
+          {copied ? 'コピーしました' : 'リンクをコピー'}
+        </button>
+        <a className="link-button" href={MANUAL_LINK} target="_blank" rel="noreferrer">
+          手順書を開く
+        </a>
+      </div>
+    </>
+  )
+}
+
 function ReportLinkSection() {
   const [copied, setCopied] = useState(false)
   const [qrDataUrl, setQrDataUrl] = useState('')
@@ -698,10 +731,11 @@ export function StaffPage() {
         </button>
       </div>
       <p className="reports-hint">
-        「監督者」は全データを閲覧できますが、追加・編集・削除はできません。招待するとメールで招待リンクが送信され、本人がパスワードを設定します。
+        「監督者」は全データを閲覧できますが、追加・編集・削除はできません。招待するとメールで招待リンクが送信され、本人がパスワードを設定します。招待した方には、下のセットアップ手順書もあわせてお送りください。
         パスワードを忘れた場合は、削除して招待し直す必要はありません。Supabaseダッシュボードの Authentication → Users
         から該当ユーザーを選び、パスワード再設定メールを送信してください。届いたリンクから、招待時と同じ画面でパスワードを再設定できます。
       </p>
+      <ManualLinkRow />
       {error && <p className="error-text">{error}</p>}
       {formOpen && (
         <div className="publisher-inline-form">
