@@ -1,14 +1,12 @@
 import type { PioneerStatus, Publisher, ServiceReport } from '../types/domain'
+import { shortStatus } from './statusShort'
 
 // 報告一覧の上に出す「立場別の集計」。画面の小表と報告一覧PDFで同じものを使う
 // (以前は同じ計算が両方に写してあり、片方だけ直すとずれる状態だった)。
-const SUMMARY_STATUS_ROWS: Array<{ status: PioneerStatus; label: string }> = [
-  { status: '伝道者', label: '伝' },
-  { status: '補助開拓者', label: '補' },
-  { status: '正規開拓者', label: '開' },
-  { status: '特別開拓者', label: '特開' },
-  { status: '野外の宣教者', label: '野宣' },
-]
+// 不活発者は報告を出さないので行に並べない。
+// 表記は statusShort.ts に一本化してある。ここに書き写すと、同じ画面で
+// 集計表とカードの立場が食い違う(実際に「開」と「正開」が混在した)
+const SUMMARY_STATUS_ORDER: PioneerStatus[] = ['伝道者', '補助開拓者', '正規開拓者', '特別開拓者', '野外の宣教者']
 
 export interface MonthSummaryRow {
   status: PioneerStatus
@@ -26,11 +24,11 @@ export interface MonthSummary {
 export function buildMonthSummary(reports: ServiceReport[], publishers: Publisher[]): MonthSummary {
   // 集計はNC(集計対象外)を除く
   const counted = reports.filter((r) => !r.no_count)
-  const allRows: MonthSummaryRow[] = SUMMARY_STATUS_ROWS.map(({ status, label }) => {
+  const allRows: MonthSummaryRow[] = SUMMARY_STATUS_ORDER.map((status) => {
     const matching = counted.filter((r) => r.pioneer_status_snapshot === status)
     return {
       status,
-      label,
+      label: shortStatus(status),
       // 「報告の数」は行数ではなく人数で数える。前月から回ってきた分により
       // 同じ人の行が2つ入りうるため(会衆集計と同じ数え方)
       count: new Set(matching.map((r) => r.publisher_id)).size,
