@@ -194,6 +194,20 @@ input {
   border-radius: 0;
 }
 
+/* 横スクロールする前提の幅広の表(開拓者進捗など)。
+   .crud-table の width:100% のままだと19列を画面幅に押し込もうとして、
+   狭い画面では氏名が1文字ずつ折り返し、行の高さばかり増えて縦に長くなる。
+   横は制限が無いので内容なりに広げ、折り返さない */
+.crud-table--wide {
+  width: auto;
+  min-width: 100%;
+}
+
+.crud-table--wide th,
+.crud-table--wide td {
+  white-space: nowrap;
+}
+
 /* 偶数行に薄い背景を付けて横方向に目を追いやすくする(縞模様) */
 .crud-table--zebra tbody tr:nth-child(even) td {
   background: var(--row-alt);

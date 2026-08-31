@@ -138,7 +138,7 @@ export function PioneerProgressPage() {
       </div>
       {error && <p className="error-text">{error}</p>}
       <div className="table-scroll-y">
-        <table className="crud-table crud-table--sticky-header crud-table--zebra">
+        <table className="crud-table crud-table--sticky-header crud-table--zebra crud-table--wide">
           <thead>
             <tr>
               <th>氏名</th>
