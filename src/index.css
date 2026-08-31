@@ -216,7 +216,8 @@ input {
 .crud-table--wide th:first-child,
 .crud-table--wide td:first-child {
   position: sticky;
-  left: 0;
+  /* 見出しの top と同じ理由で、左端もぴったりを狙わず1px外へ引いて覆う */
+  left: -1px;
   z-index: 2;
   background-color: var(--surface);
   /* 留まっている列の右端を示す線。borderだと列の幅計算に影響するので影で描く */
