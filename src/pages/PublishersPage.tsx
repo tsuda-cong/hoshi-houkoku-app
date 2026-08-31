@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
 import { RowActionsMenu } from '../components/RowActionsMenu'
@@ -405,6 +405,8 @@ export function PublishersPage() {
   }
 
   function startEdit(p: Publisher) {
+    // 詳細を開いたまま編集に入ると、重ねて出している詳細がフォームに被る
+    setExpandedId(null)
     setEditingId(p.id)
     setDraft(draftFromPublisher(p))
     setError(null)
@@ -750,9 +752,9 @@ export function PublishersPage() {
           </select>
         </label>
       </div>
-      {isAdmin && editingId !== null && (
+      {isAdmin && editingId === NEW_ROW_ID && (
         <div className="publisher-inline-form">
-          <h2>{editingId === NEW_ROW_ID ? '新規追加' : '編集'}</h2>
+          <h2>新規追加</h2>
           {error && <p className="error-text">{error}</p>}
           <PublisherFormFields draft={draft} setDraft={setDraft} groups={groups} />
           <div className="publisher-form-actions">
@@ -770,10 +772,12 @@ export function PublishersPage() {
       <div className="roster-grid">
         {visiblePublishers.map((p) => {
           const expanded = expandedId === p.id
+          const editing = isAdmin && editingId === p.id
           return (
-            // 開いた詳細はカードに重ねて出す(index.cssの.roster-card-panel)。行を押し広げないので、
-            // 下に続く一覧が上下に動かない。見比べながら次々に開けるようにするため
-            <div key={p.id} className={`roster-card${expanded ? ' is-open' : ''}`}>
+            <Fragment key={p.id}>
+              {/* 開いた詳細はカードに重ねて出す(index.cssの.roster-card-panel)。行を押し広げないので、
+                  下に続く一覧が上下に動かない。見比べながら次々に開けるようにするため */}
+              <div className={`roster-card${expanded ? ' is-open' : ''}`}>
               <div className="roster-card-head">
                 {/* ⋮ をこのボタンの外に置くことで、メニューを押したときに開閉しない */}
                 <button
@@ -814,6 +818,27 @@ export function PublishersPage() {
                 </dl>
               )}
             </div>
+            {/* 編集フォームは、操作したカードのすぐ下に横幅いっぱいで出す。
+                一覧の上に固定して出していたときは、後半の人を編集すると
+                フォームが画面外になり、毎回一番上まで戻る必要があった */}
+            {editing && (
+              <div className="publisher-inline-form roster-edit">
+                <h2>
+                  {p.last_name} {p.first_name} を編集
+                </h2>
+                {error && <p className="error-text">{error}</p>}
+                <PublisherFormFields draft={draft} setDraft={setDraft} groups={groups} />
+                <div className="publisher-form-actions">
+                  <button type="button" onClick={handleSubmit}>
+                    保存
+                  </button>
+                  <button type="button" onClick={cancel}>
+                    取消
+                  </button>
+                </div>
+              </div>
+            )}
+            </Fragment>
           )
         })}
         {visiblePublishers.length === 0 && <p className="reports-hint roster-empty">該当する人がいません。</p>}
