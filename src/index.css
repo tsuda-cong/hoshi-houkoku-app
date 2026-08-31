@@ -1221,12 +1221,14 @@ input {
     width: auto;
   }
 
+  /* overflow: hidden は使わない。角丸からのはみ出しは防げるが、
+     操作(⋮)のメニューまで切り取ってしまい、カードの下に隠れてしまう。
+     はみ出すのは背景を持つ1行目だけなので、そこの角を丸めて対処する */
   .crud-table--cards tr {
     margin-bottom: 10px;
     border: 1px solid var(--border);
     border-radius: 10px;
     background: var(--surface);
-    overflow: hidden;
   }
 
   .crud-table--cards td {
@@ -1261,6 +1263,17 @@ input {
     font-weight: 600;
     color: var(--text-h);
     background: var(--th-bg);
+    /* 枠の内側なので、枠の角丸(10px)から線の太さ1pxを引く */
+    border-radius: 9px 9px 0 0;
+  }
+
+  /* 報告一覧は1行目に氏名と対象月が横に並ぶので、角丸は左右に分ける */
+  .report-cards td:first-child:not([colspan]) {
+    border-radius: 9px 0 0 0;
+  }
+
+  .report-cards td:nth-child(2) {
+    border-radius: 0 9px 0 0;
   }
 
   /* 縞模様はセルに背景を敷くため、カードでは表題の色と喧嘩する。カードは枠で区切られていて
