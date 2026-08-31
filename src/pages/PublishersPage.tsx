@@ -13,7 +13,7 @@ import {
   type Group,
   type Publisher,
 } from '../types/domain'
-import { isoDateToYearMonth, yearMonthToIsoDate } from '../lib/dateFormat'
+import { formatJapaneseDate, isoDateToYearMonth, yearMonthToIsoDate } from '../lib/dateFormat'
 import {
   mapDedication,
   mapGender,
@@ -329,6 +329,8 @@ export function PublishersPage() {
   const [statusFilter, setStatusFilter] = useState('')
   const [sortKey, setSortKey] = useState<'romaji' | 'lastName' | 'group' | 'qualification' | 'status'>('status')
   const [editingId, setEditingId] = useState<string | null>(null)
+  // カードを開いて詳細を見ているのは常に1件だけ(開いたまま次を開くと前が閉じる)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
   const [draft, setDraft] = useState<PublisherDraft>(EMPTY_DRAFT)
   const [pasteText, setPasteText] = useState('')
   const [importing, setImporting] = useState(false)
@@ -748,75 +750,74 @@ export function PublishersPage() {
           </select>
         </label>
       </div>
-      <table className="crud-table crud-table--sticky-header crud-table--zebra crud-table--cards roster-table">
-        <thead>
-          <tr>
-            <th>氏名</th>
-            <th>グループ</th>
-            <th>資格</th>
-            <th>立場</th>
-            <th>在籍</th>
-            {isAdmin && <th>操作</th>}
-          </tr>
-        </thead>
-        <tbody>
-          {isAdmin && editingId === NEW_ROW_ID && (
-            <tr>
-              <td colSpan={6}>
-                <div className="publisher-inline-form">
-                  <h2>新規追加</h2>
-                  {error && <p className="error-text">{error}</p>}
-                  <PublisherFormFields draft={draft} setDraft={setDraft} groups={groups} />
-                  <div className="publisher-form-actions">
-                    <button type="button" onClick={handleSubmit}>
-                      保存
-                    </button>
-                    <button type="button" onClick={cancel}>
-                      取消
-                    </button>
+      {isAdmin && editingId !== null && (
+        <div className="publisher-inline-form">
+          <h2>{editingId === NEW_ROW_ID ? '新規追加' : '編集'}</h2>
+          {error && <p className="error-text">{error}</p>}
+          <PublisherFormFields draft={draft} setDraft={setDraft} groups={groups} />
+          <div className="publisher-form-actions">
+            <button type="button" onClick={handleSubmit}>
+              保存
+            </button>
+            <button type="button" onClick={cancel}>
+              取消
+            </button>
+          </div>
+        </div>
+      )}
+      {error && editingId === null && <p className="error-text">{error}</p>}
+
+      <div className="roster-grid">
+        {visiblePublishers.map((p) => {
+          const expanded = expandedId === p.id
+          return (
+            // 開いた詳細はカードに重ねて出す(index.cssの.roster-card-panel)。行を押し広げないので、
+            // 下に続く一覧が上下に動かない。見比べながら次々に開けるようにするため
+            <div key={p.id} className={`roster-card${expanded ? ' is-open' : ''}`}>
+              <div className="roster-card-head">
+                {/* ⋮ をこのボタンの外に置くことで、メニューを押したときに開閉しない */}
+                <button
+                  type="button"
+                  className="roster-card-toggle"
+                  aria-expanded={expanded}
+                  onClick={() => setExpandedId(expanded ? null : p.id)}
+                >
+                  <span className="roster-name">
+                    {p.last_name} {p.first_name}
+                  </span>
+                  <span className="roster-meta">
+                    <span>{p.pioneer_status}</span>
+                    <span>{groupName(p.group_id)}</span>
+                  </span>
+                </button>
+                {isAdmin && <RowActionsMenu onEdit={() => startEdit(p)} onDelete={() => handleDelete(p)} />}
+              </div>
+              {expanded && (
+                <dl className="roster-card-panel">
+                  <div>
+                    <dt>資格</dt>
+                    <dd>{p.qualification ?? '—'}</dd>
                   </div>
-                </div>
-              </td>
-            </tr>
-          )}
-          {visiblePublishers.map((p) =>
-            isAdmin && editingId === p.id ? (
-              <tr key={p.id}>
-                <td colSpan={6}>
-                  <div className="publisher-inline-form">
-                    <h2>編集</h2>
-                    {error && <p className="error-text">{error}</p>}
-                    <PublisherFormFields draft={draft} setDraft={setDraft} groups={groups} />
-                    <div className="publisher-form-actions">
-                      <button type="button" onClick={handleSubmit}>
-                        保存
-                      </button>
-                      <button type="button" onClick={cancel}>
-                        取消
-                      </button>
-                    </div>
+                  <div>
+                    <dt>在籍</dt>
+                    <dd>{p.is_active ? '在籍' : '転出/休止'}</dd>
                   </div>
-                </td>
-              </tr>
-            ) : (
-              <tr key={p.id}>
-                {/* data-label は狭い画面でカード表示にしたときの各項目の見出し(index.cssの
-                    .crud-table--cards)。表の見出し行と同じ言葉にしておくこと */}
-                <td>{p.last_name} {p.first_name}</td>
-                <td data-label="グループ">{groupName(p.group_id)}</td>
-                <td data-label="資格">{p.qualification ?? ''}</td>
-                <td data-label="立場">{p.pioneer_status}</td>
-                <td data-label="在籍">{p.is_active ? '在籍' : '転出/休止'}</td>
-                {isAdmin && (
-                  <td className="row-actions">
-                    <RowActionsMenu onEdit={() => startEdit(p)} onDelete={() => handleDelete(p)} />
-                  </td>
-                )}
-              </tr>
-            ),
-          )}
-        </tbody>
-      </table>
+                  <div>
+                    <dt>生年月日</dt>
+                    {/* 伝道者記録(S-21相当)と同じ「1955年2月19日」の表記に揃える */}
+                    <dd>{formatJapaneseDate(p.birth_date) || '—'}</dd>
+                  </div>
+                  <div>
+                    <dt>バプテスマ</dt>
+                    <dd>{formatJapaneseDate(p.baptism_date) || '—'}</dd>
+                  </div>
+                </dl>
+              )}
+            </div>
+          )
+        })}
+        {visiblePublishers.length === 0 && <p className="reports-hint roster-empty">該当する人がいません。</p>}
+      </div>
     </div>
   )
 }
