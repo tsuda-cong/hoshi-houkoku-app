@@ -331,6 +331,18 @@ export function PublishersPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   // カードを開いて詳細を見ているのは常に1件だけ(開いたまま次を開くと前が閉じる)
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  // 編集フォームを閉じたあと、そのカードを「押したボタンがあった高さ」へ持ってくるための控え。
+  // フォームは画面より高く、保存・取消はその下端にある。そのまま閉じるとフォームの分だけ
+  // 下のカードが一気に上へ詰まり、編集していた人とは無関係な場所が画面に出てしまう。
+  // **視線はクリックした指やポインターの所にあるので、そこに名前が来るのが一番見失わない**
+  // (画面の中央や編集前の位置に戻すと、目を動かして探し直すことになる)。
+  // 保存では一覧を取り直して並び順が変わりうるので、スクロール量ではなくカードの位置を基準にする
+  const [scrollBack, setScrollBack] = useState<{ id: string; viewportTop: number } | null>(null)
+
+  // 保存・取消を押した瞬間に、そのボタンが画面のどの高さにあったかを控える
+  function rememberScrollBack(id: string, button: HTMLElement) {
+    setScrollBack({ id, viewportTop: button.getBoundingClientRect().top })
+  }
   const [draft, setDraft] = useState<PublisherDraft>(EMPTY_DRAFT)
   const [pasteText, setPasteText] = useState('')
   const [importing, setImporting] = useState(false)
@@ -417,6 +429,18 @@ export function PublishersPage() {
     setDraft(EMPTY_DRAFT)
     setError(null)
   }
+
+  // フォームを閉じてカードが並び直したあとに、控えておいた位置へ戻す。
+  // 一覧の取り直し(保存時)を待つため publishers も依存に入れている
+  useEffect(() => {
+    if (!scrollBack || editingId !== null) return
+    setScrollBack(null)
+    const el = document.querySelector(`[data-publisher-id="${scrollBack.id}"]`)
+    if (!el) return
+    // 押したボタンがあった高さにカードが来るよう、ずれた分だけ動かす
+    // (一覧の末尾付近では、それ以上スクロールできず多少ずれることがある)
+    window.scrollBy(0, el.getBoundingClientRect().top - scrollBack.viewportTop)
+  }, [scrollBack, editingId, publishers])
 
   async function handleSubmit() {
     if (!draft.last_name.trim() || !draft.first_name.trim()) {
@@ -777,7 +801,7 @@ export function PublishersPage() {
             <Fragment key={p.id}>
               {/* 開いた詳細はカードに重ねて出す(index.cssの.roster-card-panel)。行を押し広げないので、
                   下に続く一覧が上下に動かない。見比べながら次々に開けるようにするため */}
-              <div className={`roster-card${expanded ? ' is-open' : ''}`}>
+              <div className={`roster-card${expanded ? ' is-open' : ''}`} data-publisher-id={p.id}>
               <div className="roster-card-head">
                 {/* ⋮ をこのボタンの外に置くことで、メニューを押したときに開閉しない */}
                 <button
@@ -829,10 +853,22 @@ export function PublishersPage() {
                 {error && <p className="error-text">{error}</p>}
                 <PublisherFormFields draft={draft} setDraft={setDraft} groups={groups} />
                 <div className="publisher-form-actions">
-                  <button type="button" onClick={handleSubmit}>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      rememberScrollBack(p.id, e.currentTarget)
+                      handleSubmit()
+                    }}
+                  >
                     保存
                   </button>
-                  <button type="button" onClick={cancel}>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      rememberScrollBack(p.id, e.currentTarget)
+                      cancel()
+                    }}
+                  >
                     取消
                   </button>
                 </div>
