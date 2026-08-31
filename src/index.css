@@ -208,6 +208,30 @@ input {
   white-space: nowrap;
 }
 
+/* 横スクロールしても誰の行か分かるよう、1列目(氏名)をその場に留める。
+   **留まるセルは不透明な背景が要る**。透けると、下を流れていく数字が重なって見える */
+.crud-table--wide th:first-child,
+.crud-table--wide td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background-color: var(--surface);
+  /* 留まっている列の右端を示す線。borderだと列の幅計算に影響するので影で描く */
+  box-shadow: 1px 0 0 var(--border);
+}
+
+/* 縞模様は半透明なので、そのままだと留まるセルが透ける。不透明な背景の上に重ねる */
+.crud-table--wide.crud-table--zebra tbody tr:nth-child(even) td:first-child {
+  background-color: var(--surface);
+  background-image: linear-gradient(var(--row-alt), var(--row-alt));
+}
+
+/* 見出しの1列目だけは縦にも横にも留まるので、他のセルより前に出す */
+.crud-table--wide thead th:first-child {
+  z-index: 3;
+  background-color: var(--th-bg);
+}
+
 /* 偶数行に薄い背景を付けて横方向に目を追いやすくする(縞模様) */
 .crud-table--zebra tbody tr:nth-child(even) td {
   background: var(--row-alt);
