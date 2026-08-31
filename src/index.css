@@ -1375,12 +1375,30 @@ input {
   .report-cards td:nth-child(5),
   .report-cards td:nth-child(8) {
     align-items: baseline;
-    justify-content: center;
+    /* 左揃えにするのは、下の考慮・備考と見出し・値の開始位置を縦に揃えるため。
+       中央揃えだと文字数で開始位置が動き、下の行と揃えられない */
+    justify-content: flex-start;
     gap: 4px;
     /* 375pxでも一番長い「立場 野宣」で17px余ることを実測済み */
     white-space: nowrap;
     padding-left: 6px;
     padding-right: 6px;
+  }
+
+  /* 考慮・備考・NCは1項目1行。見出しの幅を固定せず、上の「宣教」と同じ位置から
+     始める。見出しはいずれも2文字なので、値の開始位置も自然に揃う */
+  .report-cards td:nth-child(6),
+  .report-cards td:nth-child(7),
+  .report-cards td:nth-child(9) {
+    padding-left: 6px;
+    gap: 4px;
+  }
+
+  .report-cards td:nth-child(6)::before,
+  .report-cards td:nth-child(7)::before,
+  .report-cards td:nth-child(9)::before {
+    flex: 0 0 auto;
+    min-width: 2em;
   }
 
   .report-cards td:nth-child(3)::before,
