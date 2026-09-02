@@ -281,11 +281,15 @@ input {
 
 /* ---- row action buttons (crud-table 操作列) ---- */
 
+/* **display: flex を td に当ててはいけない**。表のセル(table-cell)でなくなるため、
+   同じ行の他のセルと高さ・上端がずれる(Safari/iPadでは特に目立つ)。
+   中身は横に並ぶ要素なので、間隔は余白で取れば足りる */
 .row-actions {
-  display: flex;
-  gap: 6px;
-  flex-wrap: nowrap;
   white-space: nowrap;
+}
+
+.row-actions > * + * {
+  margin-left: 6px;
 }
 
 /* ---- row action menu (crud-table 操作列の「⋮」メニュー) ---- */
