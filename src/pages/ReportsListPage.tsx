@@ -558,66 +558,69 @@ export function ReportsListPage() {
           </button>
         )}
       </div>
-      <div className="date-nav">
-        <button type="button" onClick={() => oldestPeriod && goToPeriod(oldestPeriod)} disabled={!canGoOldest}>
-          《 最古
-        </button>
-        <button type="button" onClick={() => goToPeriod(previousServicePeriod(year, month))} disabled={!canGoPrev}>
-          ← 前月
-        </button>
-        <label>
-          年度
-          <select value={year} onChange={(e) => setYear(Number(e.target.value))}>
-            {YEAR_OPTIONS.map((y) => (
-              <option key={y} value={y}>
-                {y}年度
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          月
-          <select value={month} onChange={(e) => setMonth(Number(e.target.value))}>
-            {MONTH_OPTIONS.map((m) => (
-              <option key={m} value={m}>
-                {m}月
-              </option>
-            ))}
-          </select>
-        </label>
-        <button type="button" onClick={() => goToPeriod(nextServicePeriod(year, month))} disabled={!canGoNext}>
-          次月 →
-        </button>
-        <button type="button" onClick={() => latestPeriod && goToPeriod(latestPeriod)} disabled={!canGoLatest}>
-          最新 》
-        </button>
-      </div>
-      <table className="crud-table month-summary-table">
-        <thead>
-          <tr>
-            <th>立場</th>
-            <th>人数</th>
-            <th>研究</th>
-            <th>時間</th>
-          </tr>
-        </thead>
-        <tbody>
-          {monthSummary.rows.map((r) => (
-            <tr key={r.label}>
-              <td>{r.label}</td>
-              <td>{r.count}</td>
-              <td>{r.studies}</td>
-              {r.label === '伝' ? <td className="summary-na-cell" /> : <td>{r.hours}</td>}
+      {/* ナビゲーションと集計表は、下の一覧を縦スクロールしても画面上部に固定しておく */}
+      <div className="sticky-toolbar">
+        <div className="date-nav">
+          <button type="button" onClick={() => oldestPeriod && goToPeriod(oldestPeriod)} disabled={!canGoOldest}>
+            《 最古
+          </button>
+          <button type="button" onClick={() => goToPeriod(previousServicePeriod(year, month))} disabled={!canGoPrev}>
+            ← 前月
+          </button>
+          <label>
+            年度
+            <select value={year} onChange={(e) => setYear(Number(e.target.value))}>
+              {YEAR_OPTIONS.map((y) => (
+                <option key={y} value={y}>
+                  {y}年度
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            月
+            <select value={month} onChange={(e) => setMonth(Number(e.target.value))}>
+              {MONTH_OPTIONS.map((m) => (
+                <option key={m} value={m}>
+                  {m}月
+                </option>
+              ))}
+            </select>
+          </label>
+          <button type="button" onClick={() => goToPeriod(nextServicePeriod(year, month))} disabled={!canGoNext}>
+            次月 →
+          </button>
+          <button type="button" onClick={() => latestPeriod && goToPeriod(latestPeriod)} disabled={!canGoLatest}>
+            最新 》
+          </button>
+        </div>
+        <table className="crud-table month-summary-table">
+          <thead>
+            <tr>
+              <th>立場</th>
+              <th>人数</th>
+              <th>研究</th>
+              <th>時間</th>
             </tr>
-          ))}
-          <tr className="summary-total-row">
-            <td>合計</td>
-            <td>{monthSummary.total.count}</td>
-            <td>{monthSummary.total.studies}</td>
-            <td>{monthSummary.total.hours}</td>
-          </tr>
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {monthSummary.rows.map((r) => (
+              <tr key={r.label}>
+                <td>{r.label}</td>
+                <td>{r.count}</td>
+                <td>{r.studies}</td>
+                {r.label === '伝' ? <td className="summary-na-cell" /> : <td>{r.hours}</td>}
+              </tr>
+            ))}
+            <tr className="summary-total-row">
+              <td>合計</td>
+              <td>{monthSummary.total.count}</td>
+              <td>{monthSummary.total.studies}</td>
+              <td>{monthSummary.total.hours}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       {isAdmin && (
         <details className="paste-import">
           <summary>報告を一括で貼り付けて取り込む({year}年度{month}月分)</summary>

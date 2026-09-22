@@ -89,30 +89,33 @@ export function SubmissionStatusPage() {
           報告フォーム
         </Link>
       </div>
-      <div className="date-nav">
-        <label>
-          年度
-          <select value={year} onChange={(e) => setYear(Number(e.target.value))}>
-            {YEAR_OPTIONS.map((y) => (
-              <option key={y} value={y}>
-                {y}年度
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          月
-          <select value={month} onChange={(e) => setMonth(Number(e.target.value))}>
-            {MONTH_OPTIONS.map((m) => (
-              <option key={m} value={m}>
-                {m}月
-              </option>
-            ))}
-          </select>
-        </label>
-        <span>
-          提出済み {submittedCount} / {publishers.length} 名
-        </span>
+      {/* 年度・月・提出済み人数は、下のグループを縦スクロールしても画面上部に固定しておく */}
+      <div className="sticky-toolbar">
+        <div className="date-nav">
+          <label>
+            年度
+            <select value={year} onChange={(e) => setYear(Number(e.target.value))}>
+              {YEAR_OPTIONS.map((y) => (
+                <option key={y} value={y}>
+                  {y}年度
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            月
+            <select value={month} onChange={(e) => setMonth(Number(e.target.value))}>
+              {MONTH_OPTIONS.map((m) => (
+                <option key={m} value={m}>
+                  {m}月
+                </option>
+              ))}
+            </select>
+          </label>
+          <span>
+            提出済み {submittedCount} / {publishers.length} 名
+          </span>
+        </div>
       </div>
       {error && <p className="error-text">{error}</p>}
       <div className="submission-status-groups">

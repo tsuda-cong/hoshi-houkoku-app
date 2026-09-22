@@ -100,6 +100,30 @@ input {
   padding: 14px 20px;
   border-bottom: 1px solid var(--border);
   background: var(--surface);
+  /* 縦スクロール中もページ切り替えのタブを画面上部に固定する */
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+/* 狭い画面だけで出すハンバーガーボタン。広い画面では.app-navがそのまま並ぶので隠す */
+.nav-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text-h);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.nav-toggle:hover {
+  background: var(--accent-bg);
 }
 
 .app-footer {
@@ -673,6 +697,20 @@ input {
   line-height: 1.6;
 }
 
+/* ---- sticky toolbar (報告一覧・提出状況のナビゲーション等を画面上部に固定) ---- */
+
+/* ヘッダー(.app-header)の直下に重ならないよう、実測したヘッダー高さ(--header-h、
+   Layout.tsxがResizeObserverで設定)をtopに使う。背景を敷いて、下を流れるスクロール
+   内容が隙間から透けないようにする */
+.sticky-toolbar {
+  position: sticky;
+  top: var(--header-h, 57px);
+  z-index: 40;
+  background: var(--bg);
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
 /* ---- date / month nav ---- */
 
 .date-nav {
@@ -1090,6 +1128,36 @@ input {
   .page-header h1,
   .page-header h2 {
     flex: 1 0 100%;
+  }
+
+  /* タブが画面幅に収まらないため、狭い画面ではハンバーガーメニューに切り替える。
+     .app-headerは既にposition: sticky(=positioned)なので、開いたメニューは
+     そのまま下に重ねて出せる */
+  .nav-toggle {
+    display: inline-flex;
+  }
+
+  .app-nav {
+    display: none;
+  }
+
+  .app-nav.is-open {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    gap: 2px;
+    padding: 8px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    z-index: 60;
+  }
+
+  .app-nav.is-open .app-nav-link {
+    padding: 10px 12px;
   }
 
   .crud-table--cards {
