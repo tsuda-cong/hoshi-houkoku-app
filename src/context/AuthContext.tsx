@@ -21,10 +21,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false
+    // getSession()とonAuthStateChangeの両方がloadStaffRoleを呼ぶことがあり、
+    // 後から完了した方が先に完了した方の結果を上書きしてしまうため、
+    // 常に「一番最後に呼び出した問い合わせ」の結果だけを反映する
+    let loadSeq = 0
 
     async function loadStaffRole(userId: string) {
-      const { data } = await supabase.from('staff').select('role').eq('user_id', userId).single()
-      if (!cancelled) setStaffRole((data?.role as StaffRole | undefined) ?? null)
+      const seq = ++loadSeq
+      const { data, error } = await supabase.from('staff').select('role').eq('user_id', userId).maybeSingle()
+      if (cancelled || seq !== loadSeq) return
+      if (error) {
+        // 通信の一時的な失敗などで権限が取得できなかった場合、無言で監督者相当に格下げしない。
+        // 直前の値を保持し、原因調査のためコンソールに残す
+        console.error('staffロールの取得に失敗しました', error)
+        return
+      }
+      setStaffRole((data?.role as StaffRole | undefined) ?? null)
     }
 
     supabase.auth.getSession().then(async ({ data }) => {
@@ -40,6 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (newSession) {
         loadStaffRole(newSession.user.id)
       } else {
+        loadSeq++ // 進行中の問い合わせがあれば無効化してから、ログアウトを反映する
         setStaffRole(null)
       }
     })
