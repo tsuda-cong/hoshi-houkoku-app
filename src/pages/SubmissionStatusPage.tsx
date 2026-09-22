@@ -136,7 +136,7 @@ export function SubmissionStatusPage() {
                     </td>
                     <td>
                       <span className={`status-badge ${submittedIds.has(p.id) ? 'submitted' : 'pending'}`}>
-                        {submittedIds.has(p.id) ? '提出済み' : '未提出'}
+                        {submittedIds.has(p.id) ? '済' : '未'}
                       </span>
                     </td>
                   </tr>
