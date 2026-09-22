@@ -765,19 +765,17 @@ input {
 
 /* ---- submission status groups (4グループ横並び) ---- */
 
+/* グループごとに一番長い氏名が違うので、内容なりに並べると幅がばらついて
+   縦の線が揃わない。同じ幅の升目に並べて揃える(入る数は画面幅に応じて増減する) */
 .submission-status-groups {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  align-items: start;
   gap: 12px 28px;
 }
 
-.submission-status-group {
-  flex: 0 0 auto;
-}
-
 .submission-status-group table {
-  width: auto;
+  width: 100%;
 }
 
 .submission-status-group th,
