@@ -797,11 +797,16 @@ export function PublishersPage() {
         {visiblePublishers.map((p) => {
           const expanded = expandedId === p.id
           const editing = isAdmin && editingId === p.id
+          // 転出/休止の人と不活発者は、カードをグレーにして一歩引かせる(在籍者のカードが目立つように)
+          const inactive = !p.is_active || p.pioneer_status === '不活発者'
           return (
             <Fragment key={p.id}>
               {/* 開いた詳細はカードに重ねて出す(index.cssの.roster-card-panel)。行を押し広げないので、
                   下に続く一覧が上下に動かない。見比べながら次々に開けるようにするため */}
-              <div className={`roster-card${expanded ? ' is-open' : ''}`} data-publisher-id={p.id}>
+              <div
+                className={`roster-card${expanded ? ' is-open' : ''}${inactive ? ' is-inactive' : ''}`}
+                data-publisher-id={p.id}
+              >
               <div className="roster-card-head">
                 {/* ⋮ をこのボタンの外に置くことで、メニューを押したときに開閉しない */}
                 <button

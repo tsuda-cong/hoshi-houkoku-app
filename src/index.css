@@ -14,6 +14,11 @@
   --surface-raised: #fff;
   /* カードの見出しに触れたときの色 */
   --accent-bg-strong: rgba(107, 59, 255, 0.16);
+  /* 名簿で転出/休止・不活発者のカードに使う無彩色。文字は薄くするが、
+     13pxの立場・グループでも読めるよう背景との差(コントラスト4.5:1以上)を確保する */
+  --inactive-bg: #ececee;
+  --inactive-bg-hover: #e1e1e4;
+  --inactive-text: #6b6970;
   --sans: system-ui, 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
 
   font: 16px/1.55 var(--sans);
@@ -39,6 +44,9 @@
     --th-bg: #332f46;
     --surface-raised: #292930;
     --accent-bg-strong: rgba(163, 137, 255, 0.26);
+    --inactive-bg: #242428;
+    --inactive-bg-hover: #2d2d32;
+    --inactive-text: #8e8d94;
   }
 }
 
@@ -996,6 +1004,21 @@ input {
 
 .roster-card-toggle:hover {
   background: var(--accent-bg-strong);
+}
+
+/* 転出/休止・不活発者のカード。紫を抜いたグレーにして文字も薄くし、在籍者のカードを目立たせる。
+   開いたときの詳細(.roster-card-panel)は読むためのものなので、通常どおりの色のまま */
+.roster-card.is-inactive {
+  background: var(--inactive-bg);
+}
+
+.roster-card.is-inactive .roster-card-toggle:hover {
+  background: var(--inactive-bg-hover);
+}
+
+.roster-card.is-inactive .roster-name,
+.roster-card.is-inactive .roster-meta {
+  color: var(--inactive-text);
 }
 
 .roster-card-toggle:focus-visible {
