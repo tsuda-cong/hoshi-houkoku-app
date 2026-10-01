@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { supabase } from '../lib/supabaseClient'
+import { publicSupabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
 import { computeReportPeriod } from '../lib/reportPeriod'
 import { isPeriodClosed } from '../lib/closedPeriods'
@@ -115,7 +115,7 @@ export function PublicReportPage() {
     setCheckingExisting(true)
     setMatchError(null)
     try {
-      const { data, error } = await supabase.rpc('public_report_exists', {
+      const { data, error } = await publicSupabase.rpc('public_report_exists', {
         p_publisher_id: p.id,
         p_year: period.year,
         p_month: period.month,
@@ -142,7 +142,7 @@ export function PublicReportPage() {
     setValidationError(null)
     setSubmitError(null)
     try {
-      const { data, error } = await supabase.rpc('public_match_publisher', { p_name: name })
+      const { data, error } = await publicSupabase.rpc('public_match_publisher', { p_name: name })
       if (error) throw error
       const match = (data as PublicPublisherMatch[] | null)?.[0] ?? null
       if (!match) {
@@ -228,11 +228,11 @@ export function PublicReportPage() {
       // upsert()のON CONFLICT経路(内部的にSELECT権限を要求する)はRLSで弾かれる。
       // 既に存在するかは事前のpublic_report_existsで分かっているので、insert/updateを分けて呼ぶ
       const { error } = reportExists
-        ? await supabase
+        ? await publicSupabase
             .from('service_reports')
             .update(fields)
             .match({ publisher_id: publisher.id, year: period.year, month: period.month })
-        : await supabase
+        : await publicSupabase
             .from('service_reports')
             .insert({ publisher_id: publisher.id, year: period.year, month: period.month, ...fields })
       if (error) throw error
