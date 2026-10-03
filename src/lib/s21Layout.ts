@@ -78,6 +78,9 @@ export interface StaticLabel {
   bold: boolean
 }
 
+// 手で直した値(2026-10-03): 「奉仕年度」「宣教を行った」の x を、列の中央に来るよう実測した
+// 文字幅から計算し直した(宣教を行ったは3.7pt右に寄っていた)。生成元はもう無いので、
+// 作り直すことがあればこの調整を引き継ぐこと
 export const STATIC_LABELS: readonly StaticLabel[] = [
   { text: '会衆の伝道者記録', x: 217.85, y: 796.92, size: 20.04, bold: true },
   { text: '氏名：', x: 35.52, y: 753.12, size: 12.0, bold: true },
@@ -93,8 +96,8 @@ export const STATIC_LABELS: readonly StaticLabel[] = [
   { text: '特別開拓者', x: 352.87, y: 676.42, size: 11.04, bold: false },
   { text: '野外の宣教者', x: 458.74, y: 676.42, size: 11.04, bold: false },
   { text: '時間', x: 323.11, y: 622.06, size: 9.96, bold: true },
-  { text: '奉仕年度', x: 41.88, y: 616.9, size: 9.0, bold: true },
-  { text: '宣教を行った', x: 95.06, y: 610.42, size: 9.96, bold: true },
+  { text: '奉仕年度', x: 41.7, y: 616.9, size: 9.0, bold: true },
+  { text: '宣教を行った', x: 91.33, y: 610.42, size: 9.96, bold: true },
   { text: '聖書研究', x: 172.34, y: 610.42, size: 9.96, bold: true },
   { text: '補助開拓奉仕', x: 232.97, y: 610.42, size: 9.96, bold: true },
   { text: '備考', x: 455.26, y: 610.42, size: 9.96, bold: true },
@@ -114,8 +117,8 @@ export const STATIC_LABELS: readonly StaticLabel[] = [
   { text: '8月', x: 50.64, y: 372.41, size: 11.04, bold: true },
   { text: '合計', x: 275.57, y: 354.29, size: 9.96, bold: true },
   { text: '時間', x: 323.11, y: 315.41, size: 9.96, bold: true },
-  { text: '奉仕年度', x: 41.88, y: 310.25, size: 9.0, bold: true },
-  { text: '宣教を行った', x: 95.06, y: 303.77, size: 9.96, bold: true },
+  { text: '奉仕年度', x: 41.7, y: 310.25, size: 9.0, bold: true },
+  { text: '宣教を行った', x: 91.33, y: 303.77, size: 9.96, bold: true },
   { text: '聖書研究', x: 172.34, y: 303.77, size: 9.96, bold: true },
   { text: '補助開拓奉仕', x: 232.97, y: 303.77, size: 9.96, bold: true },
   { text: '備考', x: 455.26, y: 303.77, size: 9.96, bold: true },
