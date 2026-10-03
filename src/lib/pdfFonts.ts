@@ -8,7 +8,7 @@ import { isBoldRenderable } from './pdfBoldChars'
 // pdf-lib の subset:true はサブセット処理の不具合で一部の文字が描画されないため使えない
 // (AcroFormの有無とは無関係に再現することを確認済み)。そのため本文用は全文字を埋め込む。
 // 太字は帳票の見出しなど決まった文字にしか使わないので、その文字だけに絞った軽量版
-// (fontToolsで生成、public/fonts/NotoSansJP-Bold-Labels.ttf)を別に用意している。
+// (fontToolsで生成、public/fonts/NotoSansJP-Bold-Labels-v2.ttf)を別に用意している。
 
 export interface PdfFonts {
   regular: PDFFont
@@ -22,7 +22,7 @@ function loadFontBytes() {
   if (!cache) {
     cache = Promise.all([
       fetch(`${import.meta.env.BASE_URL}fonts/NotoSansJP-Regular.ttf`).then((r) => r.arrayBuffer()),
-      fetch(`${import.meta.env.BASE_URL}fonts/NotoSansJP-Bold-Labels.ttf`).then((r) => r.arrayBuffer()),
+      fetch(`${import.meta.env.BASE_URL}fonts/NotoSansJP-Bold-Labels-v2.ttf`).then((r) => r.arrayBuffer()),
     ]).then(([regular, bold]) => ({ regular, bold }))
     cache.catch(() => {
       cache = undefined

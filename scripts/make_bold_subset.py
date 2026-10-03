@@ -7,8 +7,10 @@ from fontTools import subset
 
 REPO = 'D:/ドキュメント/奉仕報告アプリ'
 SRC = 'C:/Windows/Fonts/NotoSansJP-Bold.ttf'
-OLD = f'{REPO}/public/fonts/NotoSansJP-Bold-Labels.ttf'
-OUT = f'{REPO}/public/fonts/NotoSansJP-Bold-Labels.ttf'
+OLD = f'{REPO}/public/fonts/NotoSansJP-Bold-Labels-v2.ttf'  # いま使っている版
+# 中身を変えたら必ず版番号を上げた新しい名前で出す(sw.jsが /fonts/ を一度取ったら更新しないため)。
+# 出力後、古いファイルを消し、pdfFonts.ts・pdfBoldChars.ts のファイル名も合わせること
+OUT = f'{REPO}/public/fonts/NotoSansJP-Bold-Labels-v3.ttf'
 CHARS_TS = f'{REPO}/src/lib/pdfBoldChars.ts'
 # 足りない文字が見つかったら、ここに足して実行する(2026-10-03に「度」を追加)
 EXTRA = '度'

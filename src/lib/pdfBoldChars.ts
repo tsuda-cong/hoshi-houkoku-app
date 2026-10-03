@@ -1,5 +1,5 @@
 // このファイルは自動生成です(手で編集しないでください)。
-// public/fonts/NotoSansJP-Bold-Labels.ttf に収録されている文字の一覧。
+// public/fonts/NotoSansJP-Bold-Labels-v2.ttf に収録されている文字の一覧。
 // pdf-lib は未収録の文字を例外にせず空白として描いてしまうため、
 // 太字で描く前にこの一覧で確認し、含まれない文字があれば本文フォントに切り替える。
 // フォントを作り直すときは scripts/make_bold_subset.py で両方を同時に生成すること。
